@@ -448,6 +448,7 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
   <div class="peta-scroll" id="petaScroll">
     <div class="peta-msg hidden" id="petaMsg">
       <p class="muted" style="margin:0 0 12px">Gambar mushaf belum bisa dimuat. Cek koneksi internet, lalu coba lagi.</p>
+      <p class="muted" id="petaUrl" style="margin:0 0 12px;font-size:11px;word-break:break-all"></p>
       <a class="peta-tool" id="petaExt" href="#">Buka di situs mushaf</a>
     </div>
     <div class="peta-stage" id="petaStage"><img id="petaImg" alt="Halaman mushaf" decoding="async"></div>
@@ -748,18 +749,22 @@ function setMushafLink(s,a){
 /* ================= Peta ayat (mushaf landscape, Juz 29) ================= */
 /* File peta-landscape-juz29.js harus satu folder dengan index.html.
    Gambar spread dimuat dari PETA_IMG_BASE + 'L/<f>.webp' (isi '' kalau folder L/ ada di folder app ini). */
-const PETA_JS='peta-landscape-juz29.js';
+const PETA_JS=['peta-lanskap-juz29.js','peta-landscape-juz29.js']; // nama file di repo: dicoba berurutan
 const PETA_IMG_BASE=MUSHAF_BASE;
 let petaLoading=null;
 function loadPeta(){
   if(window.PETA_L)return Promise.resolve(window.PETA_L);
   if(petaLoading)return petaLoading;
   petaLoading=new Promise((res,rej)=>{
-    const sc=document.createElement('script');
-    sc.src=PETA_JS;
-    sc.onload=()=>window.PETA_L?res(window.PETA_L):rej(new Error('peta kosong'));
-    sc.onerror=()=>rej(new Error('peta gagal dimuat'));
-    document.head.appendChild(sc);
+    let i=0;
+    (function next(){
+      if(i>=PETA_JS.length)return rej(new Error('peta gagal dimuat'));
+      const sc=document.createElement('script');
+      sc.src=PETA_JS[i++];
+      sc.onload=()=>window.PETA_L?res(window.PETA_L):next();
+      sc.onerror=()=>{sc.remove();next();};
+      document.head.appendChild(sc);
+    })();
   }).catch(e=>{petaLoading=null;throw e;});
   return petaLoading;
 }
@@ -785,7 +790,7 @@ function openPeta(s,a){
     sc.scrollTop=(y0+y1)/2*stage.clientHeight-sc.clientHeight/2;
   }
   img.onload=focusRects;
-  img.onerror=()=>msg.classList.remove('hidden');
+  img.onerror=()=>{$('petaUrl').textContent=img.src;msg.classList.remove('hidden');};
   img.removeAttribute('src');
   img.src=PETA_IMG_BASE+'L/'+info.f+'.webp';
   ov.classList.remove('hidden');
