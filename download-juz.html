@@ -5,47 +5,71 @@
 <meta name="theme-color" content="#0E4A3B">
 <title>Download Mushaf per Juz</title>
 <style>
-:root{--bg:#F2F1E7;--surface:#FBFAF4;--ink:#10231D;--muted:#586C63;--line:#DBDED0;--primary:#0E4A3B;--on:#F8F5E8;--em:#17705A;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root{--bg:#0A1512;--surface:#101F1A;--ink:#ECE8D8;--muted:#9DB0A6;--line:#203429;--primary:#1F7A60;--on:#F4F1E4;--em:#3FA88B}}
+:root{--bg:#F2F1E7;--surface:#FBFAF4;--ink:#10231D;--muted:#586C63;--line:#DBDED0;--primary:#0E4A3B;--on:#F8F5E8;--em:#17705A;--err:#A8321F;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root{--bg:#0A1512;--surface:#101F1A;--ink:#ECE8D8;--muted:#9DB0A6;--line:#203429;--primary:#1F7A60;--on:#F4F1E4;--em:#3FA88B;--err:#F0917C}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:640px;margin:0 auto;padding:16px}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 90px}
 h1{font-size:20px;margin:0 0 4px}.muted{color:var(--muted);font-size:13px}
 .row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px}
 .row b{flex:1}.row small{display:block;color:var(--muted);font-weight:400}
 button{font:600 13px system-ui;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px}
 button.p{background:var(--primary);color:var(--on);border-color:var(--primary)}
 button:disabled{opacity:.5}
-.bar{height:4px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:var(--em)}
+.bar{height:4px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:var(--em);transition:width .2s}
+#msg{display:none;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:616px;margin:0 auto;z-index:9;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+#msg.err{border-color:var(--err);color:var(--err)}
 </style></head><body><div class="wrap">
 <h1>Download Mushaf per Juz</h1>
 <p class="muted" id="est">Setiap juz diunduh untuk mode potret dan landscape sekaligus, disimpan di penyimpanan browser (bukan localStorage), dan bisa dibaca offline.</p>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="p" id="all">Unduh semua juz</button><button id="back">‹ Kembali</button></div>
 <div id="list"></div></div>
+<div id="msg" role="status" aria-live="polite"></div>
 <script src="config.js"></script>
 <script>
-const C=CFG, NAME='mushaf-v1', $=id=>document.getElementById(id);
+const NAME='mushaf-v1', $=id=>document.getElementById(id);
+let mt;
+// pesan mengambang di bawah layar; pesan biasa hilang sendiri, pesan error tetap sampai diketuk
+function msg(t,err){const m=$('msg');clearTimeout(mt);
+  if(!t){m.style.display='none';return}
+  m.textContent=t;m.className=err?'err':'';m.style.display='block';
+  if(!err)mt=setTimeout(()=>{m.style.display='none'},4000)}
+$('msg').onclick=()=>msg('');
+$('back').onclick=()=>document.referrer?history.back():location.href='index.html';
+if(typeof CFG==='undefined'||!CFG.src){$('all').disabled=true;msg('config.js gagal dimuat. Muat ulang halaman saat online.',1);throw new Error('CFG kosong')}
+if(!window.caches){$('all').disabled=true;msg('Penyimpanan offline tidak tersedia. Buka lewat alamat https, bukan dari file.',1);throw new Error('caches kosong')}
+const C=CFG;
 // tiap halaman diunduh untuk kedua mode (potret P + landscape L) sekaligus
 const urls=p=>['P','L'].map(m=>C.src(p,m));
 const juzOf=p=>{for(let j=29;j>=0;j--)if(p>=C.juzStart[j])return j+1;return 1};
-const refreshNear=j=>{refresh(j);if(j>1)refresh(j-1);if(j<30)refresh(j+1)};
 const rng=j=>[C.juzStart[j-1], j<30?C.juzStart[j]-1:C.total];
-let busy=false;
+const refreshNear=async j=>{await refresh(j);if(j>1)await refresh(j-1);if(j<30)await refresh(j+1)};
+const errText=e=>e&&e.name==='AbortError'?'Koneksi terlalu lambat (waktu habis). Ketuk lagi untuk melanjutkan.':((e&&e.message)||'Gagal mengunduh. Cek koneksi lalu coba lagi.');
+let busy='';
 async function count(j){const c=await caches.open(NAME),[s,e]=rng(j);let n=0;
   for(let p=s;p<=e;p++){let ok=true;for(const u of urls(p))if(!await c.match(u))ok=false;if(ok)n++}return [n,e-s+1]}
 async function refresh(j){const [n,t]=await count(j),r=$('r'+j);
   r.querySelector('small').textContent=n===t?'✓ Lengkap · '+t+' halaman':n+' / '+t+' halaman';
   r.querySelector('.d').textContent=n===t?'Terunduh':'Unduh';r.querySelector('.d').disabled=n===t;
   r.querySelector('.x').hidden=!n; r.querySelector('.bar i').style.width=(n/t*100)+'%'}
+// unduh satu file: cek status, batas waktu 60 detik
+async function ambil(c,u){
+  const ac=new AbortController(),t=setTimeout(()=>ac.abort(),60000);
+  try{const r=await fetch(u,{signal:ac.signal});
+    if(!r.ok)throw new Error('File tidak bisa diambil: '+decodeURIComponent(u)+' (HTTP '+r.status+')');
+    await c.put(u,r)}
+  finally{clearTimeout(t)}}
 async function unduh(j){
-  const c=await caches.open(NAME),[s,e]=rng(j),bar=$('r'+j).querySelector('.bar i');
-  for(let p=s;p<=e;p+=5){
-    const us=[];for(let q=p;q<=Math.min(p+4,e);q++)us.push(...urls(q));
-    const uniq=[...new Set(us)];us.length=0;us.push(...uniq);
-    await Promise.all(us.map(async u=>{if(!await c.match(u))await c.add(u)}));
-    bar.style.width=((Math.min(p+4,e)-s+1)/(e-s+1)*100)+'%';
-  }
-  refreshNear(j);
-}
+  const c=await caches.open(NAME),[s,e]=rng(j),row=$('r'+j),btn=row.querySelector('.d'),bar=row.querySelector('.bar i');
+  const all=new Set();for(let p=s;p<=e;p++)urls(p).forEach(u=>all.add(u));
+  const todo=[];for(const u of all)if(!await c.match(u))todo.push(u);
+  let done=all.size-todo.length,i=0,fail=null;
+  const show=()=>{const pct=Math.round(done/all.size*100);bar.style.width=pct+'%';btn.disabled=true;btn.textContent='Mengunduh '+pct+'%'};
+  show();
+  const worker=async()=>{while(i<todo.length&&!fail){const u=todo[i++];
+    try{await ambil(c,u);done++;show()}catch(x){fail=fail||x}}};
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  if(fail)throw fail;
+  await refresh(j)}
 async function hapus(j){
   const c=await caches.open(NAME),[s,e]=rng(j),mine=new Set();
   for(let p=s;p<=e;p++)urls(p).forEach(u=>mine.add(u));
@@ -59,21 +83,28 @@ async function hapus(j){
     if(punya)shared.forEach(u=>keep.add(u));
   }
   for(const u of mine)if(!keep.has(u))await c.delete(u);
-  refreshNear(j);
-}
+  await refreshNear(j)}
 async function estimate(){if(navigator.storage&&navigator.storage.estimate){const x=await navigator.storage.estimate();
   $('est').textContent='Terpakai ±'+(x.usage/1048576).toFixed(0)+' MB (di penyimpanan browser, bukan localStorage).'}}
+const sibuk=()=>{if(busy){msg('Masih mengunduh '+busy+'. Tunggu sampai selesai.');return true}
+  if(navigator.onLine===false){msg('Tidak ada koneksi internet.',1);return true}return false};
 for(let j=1;j<=30;j++){
   const r=document.createElement('div');r.className='row';r.id='r'+j;
-  r.innerHTML='<div style="flex:1"><b>Juz '+j+'</b><small></small><div class="bar"><i></i></div></div><button class="d p"></button><button class="x" hidden>Hapus</button>';
-  r.querySelector('.d').onclick=async()=>{if(busy)return;busy=true;try{await unduh(j)}catch(e){r.querySelector('small').textContent='Gagal (cek koneksi)'}busy=false;estimate()};
-  r.querySelector('.x').onclick=async()=>{await hapus(j);estimate()};
-  $('list').appendChild(r);refresh(j);
+  r.innerHTML='<div style="flex:1"><b>Juz '+j+'</b><small></small><div class="bar"><i></i></div></div><button class="d p">Unduh</button><button class="x" hidden>Hapus</button>';
+  r.querySelector('.d').onclick=async()=>{if(sibuk())return;busy='Juz '+j;msg('Mengunduh Juz '+j+'…');
+    try{await unduh(j);msg('Juz '+j+' selesai diunduh.')}catch(e){msg(errText(e),1)}
+    busy='';try{await refreshNear(j);await estimate()}catch(e){}};
+  r.querySelector('.x').onclick=async()=>{if(busy){msg('Masih mengunduh '+busy+'. Tunggu sampai selesai.');return}
+    try{await hapus(j);await estimate();msg('Juz '+j+' dihapus dari penyimpanan.')}catch(e){msg(errText(e),1)}};
+  $('list').appendChild(r);
+  refresh(j).catch(()=>msg('Tidak bisa membaca penyimpanan offline.',1));
 }
-$('all').onclick=async()=>{if(busy)return;busy=true;$('all').disabled=true;
-  try{for(let j=1;j<=30;j++)await unduh(j)}catch(e){$('est').textContent='Terhenti. Coba lagi saat koneksi stabil.'}
-  busy=false;$('all').disabled=false;estimate()};
-$('back').onclick=()=>document.referrer?history.back():location.href='index.html';
+$('all').onclick=async()=>{if(sibuk())return;busy='semua juz';const a=$('all');a.disabled=true;
+  try{for(let j=1;j<=30;j++){a.textContent='Juz '+j+' dari 30…';msg('Mengunduh Juz '+j+' dari 30…');await unduh(j)}
+    msg('Semua juz sudah diunduh.')}
+  catch(e){msg(errText(e),1)}
+  busy='';a.disabled=false;a.textContent='Unduh semua juz';
+  try{for(let j=1;j<=30;j++)await refresh(j);await estimate()}catch(e){}};
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 estimate();
 location.protocol.startsWith('http')&&navigator.serviceWorker&&navigator.serviceWorker.register('sw.js');
