@@ -1,4 +1,4 @@
-const VERSI = 'kuis-murojaah-v3';
+const VERSI = 'kuis-murojaah-v4';
 const FILE_APP = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png',
@@ -12,7 +12,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== VERSI).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k.startsWith('kuis-murojaah-') && k !== VERSI).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });

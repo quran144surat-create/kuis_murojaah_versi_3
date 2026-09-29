@@ -694,6 +694,8 @@ function pageOfG(g){
    halaman rata" — harus tabel eksak begini. Kalau edisi mushaf kamu beda 1-2
    halaman, sesuaikan angka di array ini (harus SAMA dengan JUZ_PAGE_RANGES
    di file juz-N.html kamu). */
+/* Alamat situs mushaf (repo kuis_murojaah_versi_3 di GitHub Pages). Harus berakhiran '/'. */
+const MUSHAF_BASE='https://quran144surat-create.github.io/kuis_murojaah_versi_3/';
 const JUZ_PAGE_START=[1,22,42,62,82,102,122,142,162,182,202,222,242,262,282,302,322,342,362,382,402,422,442,462,482,502,522,542,562,582];
 function juzOfPage(p){
   for(let j=JUZ_PAGE_START.length-1;j>=0;j--){
@@ -705,7 +707,7 @@ function mushafUrl(s,a){
   const g=gAyah(s,a);
   const p=pageOfG(g);
   const j=juzOfPage(p);
-  return 'juz-'+j+'.html?s='+s+'&a='+a;
+  return MUSHAF_BASE+'juz-'+j+'.html?s='+s+'&a='+a;
 }
 function setMushafLink(s,a){
   const btn=$('btnMushaf');
@@ -1430,7 +1432,7 @@ $('tabBeranda').onclick=()=>view('beranda');
 $('tabLainnya').onclick=()=>view('lainnya');
 $('tabPengaturan').onclick=()=>view('pengaturan');
 $('rowAudio').onclick=()=>view('pengaturan-audio');
-$('rowDownloadMushaf').onclick=()=>{location.href='download-juz.html';};
+$('rowDownloadMushaf').onclick=()=>{location.href=MUSHAF_BASE+'download-juz.html';};
 $('btnAudioBack').onclick=()=>view('pengaturan');
 $('rowQori').onclick=()=>{view('pengaturan-audio-qori');refreshQoriStatus();};
 $('btnQoriBack').onclick=()=>view('pengaturan-audio');
