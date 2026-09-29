@@ -58,8 +58,7 @@ SN.forEach((n,i)=>$('ssel').add(new Option((i+1)+'. '+n,i+1)));
 for(let i=1;i<=T;i++)$('sel').add(new Option('Hal. '+i,i));
 
 const track=$('track'),mq=matchMedia('(orientation:landscape)');
-const wide=()=>C.spread&&mq.matches&&innerWidth>=600;
-let spread=wide(),cells={},loaded=new Set(),loadObs,curObs;
+let spread=mq.matches,cells={},loaded=new Set(),loadObs,curObs;
 const start=n=>spread?(n%2?n:n-1):n;
 
 function loadImg(h){
@@ -72,7 +71,9 @@ function loadImg(h){
 function unloadFar(){loaded.forEach(h=>{if(Math.abs(+h.dataset.p-cur)>12){h.replaceChildren();delete h.dataset.done;loaded.delete(h)}})}
 function setCur(n){
   cur=n;$('sel').value=n;
-  const j=juzOf(n);$('jsel').value=j;$('ttl').textContent='Juz '+j;
+  // landscape: spread di perbatasan memuat dua juz -> judul 'Juz 1–2', pilihan juz mengikuti halaman kedua
+  const j1=juzOf(n),j2=spread&&n<T?juzOf(n+1):j1;
+  $('jsel').value=j2;$('ttl').textContent='Juz '+(j1===j2?j1:j1+'–'+j2);
   // surat yang tampil di halaman aktif; pilihan pengguna dipertahankan bila masih ada di halaman ini
   const e=spread&&n<T?n+1:n,s1=surahOf(C.ps[n-1]),s2=surahOf(e<T?C.ps[e]-1:TA),sv=+$('ssel').value;
   $('ssel').value=(sv>=s1&&sv<=s2)?sv:s1;
@@ -86,14 +87,15 @@ function goto(n,smooth){
   if(c)c.scrollIntoView({behavior:smooth?'smooth':'instant',inline:'center',block:'nearest'});
 }
 // Urutan DOM = urutan baca Arab (direction:rtl): elemen pertama ada di paling KANAN.
-// Mode 2 halaman: ganjil di kanan, genap di kiri (1|2, 3|4, ...).
+// Landscape: satu gambar per pasangan halaman ganjil,genap (1,2 | 3,4 | ...).
 function build(){
   loadObs&&loadObs.disconnect();curObs&&curObs.disconnect();
   track.replaceChildren();cells={};loaded.clear();
   const step=spread?2:1,frag=document.createDocumentFragment();
   for(let i=1;i<=T;i+=step){
-    const d=document.createElement('div');d.className='pg'+(spread?' sp':'');d.dataset.p=i;
-    for(let n=i;n<i+step&&n<=T;n++){const h=document.createElement('div');h.className='h';h.dataset.p=n;d.appendChild(h)}
+    const d=document.createElement('div');d.className='pg';d.dataset.p=i;
+    // potret: 1 gambar = 1 halaman; landscape: 1 gambar (i,i+1) sudah berisi 2 halaman
+    const h=document.createElement('div');h.className='h';h.dataset.p=i;d.appendChild(h);
     cells[i]=d;frag.appendChild(d);
   }
   track.appendChild(frag);
@@ -107,7 +109,7 @@ function build(){
 }
 build();
 // HP diputar -> muat ulang gambar dari folder P/L yang sesuai (halaman aktif tetap)
-mq.addEventListener('change',()=>{spread=wide();build()});
+mq.addEventListener('change',()=>{spread=mq.matches;build()});
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>goto(cur,false),150)});
 
 $('sel').onchange=e=>goto(+e.target.value,false);

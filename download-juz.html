@@ -26,6 +26,8 @@ button:disabled{opacity:.5}
 const C=CFG, NAME='mushaf-v1', $=id=>document.getElementById(id);
 // tiap halaman diunduh untuk kedua mode (potret P + landscape L) sekaligus
 const urls=p=>['P','L'].map(m=>C.src(p,m));
+const juzOf=p=>{for(let j=29;j>=0;j--)if(p>=C.juzStart[j])return j+1;return 1};
+const refreshNear=j=>{refresh(j);if(j>1)refresh(j-1);if(j<30)refresh(j+1)};
 const rng=j=>[C.juzStart[j-1], j<30?C.juzStart[j]-1:C.total];
 let busy=false;
 async function count(j){const c=await caches.open(NAME),[s,e]=rng(j);let n=0;
@@ -38,13 +40,27 @@ async function unduh(j){
   const c=await caches.open(NAME),[s,e]=rng(j),bar=$('r'+j).querySelector('.bar i');
   for(let p=s;p<=e;p+=5){
     const us=[];for(let q=p;q<=Math.min(p+4,e);q++)us.push(...urls(q));
+    const uniq=[...new Set(us)];us.length=0;us.push(...uniq);
     await Promise.all(us.map(async u=>{if(!await c.match(u))await c.add(u)}));
     bar.style.width=((Math.min(p+4,e)-s+1)/(e-s+1)*100)+'%';
   }
-  await refresh(j);
+  refreshNear(j);
 }
-async function hapus(j){const c=await caches.open(NAME),[s,e]=rng(j);
-  for(let p=s;p<=e;p++)for(const u of urls(p))await c.delete(u);await refresh(j)}
+async function hapus(j){
+  const c=await caches.open(NAME),[s,e]=rng(j),mine=new Set();
+  for(let p=s;p<=e;p++)urls(p).forEach(u=>mine.add(u));
+  // file spread perbatasan dipakai juga oleh juz tetangga: jangan hapus bila tetangga masih punya file lain
+  const keep=new Set();
+  for(const q of [s-1,e+1]){
+    if(q<1||q>C.total)continue;
+    const shared=urls(q).filter(u=>mine.has(u));if(!shared.length)continue;
+    const [ks,ke]=rng(juzOf(q));let punya=false;
+    for(let p=ks;p<=ke&&!punya;p++)for(const u of urls(p))if(!mine.has(u)&&await c.match(u)){punya=true;break}
+    if(punya)shared.forEach(u=>keep.add(u));
+  }
+  for(const u of mine)if(!keep.has(u))await c.delete(u);
+  refreshNear(j);
+}
 async function estimate(){if(navigator.storage&&navigator.storage.estimate){const x=await navigator.storage.estimate();
   $('est').textContent='Terpakai ±'+(x.usage/1048576).toFixed(0)+' MB (di penyimpanan browser, bukan localStorage).'}}
 for(let j=1;j<=30;j++){
