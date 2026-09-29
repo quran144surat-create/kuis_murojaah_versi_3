@@ -1,7 +1,8 @@
 // Naikkan angka versi bila file ini berubah. Halaman/skrip: cek internet dulu (selalu terbaru),
 // gambar mushaf: pakai simpanan offline dulu (hemat kuota, cepat).
-const V='shell-v5', IMG='mushaf-v1';
+const V='shell-v6', IMG='mushaf-v1';
 const SHELL=['./','index.html','config.js','mushaf.html','download-juz.html','manifest.webmanifest',
+  'ayah-boxes-L.json','ayah-boxes-P.json',
   'icon-192.png','icon-512.png','icon-maskable-512.png',
   ...Array.from({length:30},(_,i)=>`juz-${i+1}.html`)];
 
