@@ -197,6 +197,19 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .mode-badge{font:700 11.5px var(--sans);color:var(--primary);background:var(--fill);padding:5px 12px;border-radius:99px;flex:none;transition:background .2s,color .2s,box-shadow .2s}
 .mode-badge.on{background:var(--em);color:var(--on-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--em) 25%,transparent),0 0 10px color-mix(in srgb,var(--em) 55%,transparent)}
 .mode-badge.off{background:var(--surface2);color:var(--muted);box-shadow:none;opacity:.75}
+
+/* ---- Peta ayat: penampil mushaf dalam app ---- */
+.peta-ov{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column}
+.peta-bar{display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px;border-bottom:1px solid var(--line);background:var(--surface)}
+.peta-title{flex:1;min-width:0;font:700 17px var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.peta-tool{appearance:none;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);border-radius:10px;padding:7px 11px;font:600 12.5px var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}
+.peta-ov.off #petaHl{background:var(--fill);border-color:var(--em);color:var(--primary)}
+.peta-scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--tile);padding-bottom:env(safe-area-inset-bottom,0px)}
+.peta-stage{position:relative;width:max(100%,900px)}
+.peta-stage img{display:block;width:100%;height:auto}
+.peta-rect{position:absolute;border-radius:4px;background:color-mix(in srgb,var(--gold) 38%,transparent);box-shadow:0 0 0 1.5px var(--gold);pointer-events:none;mix-blend-mode:multiply}
+.peta-ov.off .peta-rect{display:none}
+.peta-msg{padding:28px 20px;text-align:center}
 </style>
 </head>
 <body>
@@ -424,6 +437,21 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
     </a>
   </div>
 
+</div>
+
+<div class="peta-ov hidden" id="petaOv" role="dialog" aria-modal="true" aria-label="Ayat di mushaf">
+  <div class="peta-bar">
+    <button class="icon-btn" id="petaClose" type="button" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="peta-title" id="petaTitle"></span>
+    <button class="peta-tool" id="petaHl" type="button" aria-label="Tampilkan atau sembunyikan sorotan ayat">Sorotan</button>
+  </div>
+  <div class="peta-scroll" id="petaScroll">
+    <div class="peta-msg hidden" id="petaMsg">
+      <p class="muted" style="margin:0 0 12px">Gambar mushaf belum bisa dimuat. Cek koneksi internet, lalu coba lagi.</p>
+      <a class="peta-tool" id="petaExt" href="#">Buka di situs mushaf</a>
+    </div>
+    <div class="peta-stage" id="petaStage"><img id="petaImg" alt="Halaman mushaf" decoding="async"></div>
+  </div>
 </div>
 
 <nav class="tabbar" id="tabbar">
@@ -713,8 +741,70 @@ function setMushafLink(s,a){
   const btn=$('btnMushaf');
   if(!btn)return;
   btn.href=mushafUrl(s,a);
+  btn.dataset.s=s;btn.dataset.a=a;
   btn.style.display='inline-flex';
 }
+
+/* ================= Peta ayat (mushaf landscape, Juz 29) ================= */
+/* File peta-landscape-juz29.js harus satu folder dengan index.html.
+   Gambar spread dimuat dari PETA_IMG_BASE + 'L/<f>.webp' (isi '' kalau folder L/ ada di folder app ini). */
+const PETA_JS='peta-landscape-juz29.js';
+const PETA_IMG_BASE=MUSHAF_BASE;
+let petaLoading=null;
+function loadPeta(){
+  if(window.PETA_L)return Promise.resolve(window.PETA_L);
+  if(petaLoading)return petaLoading;
+  petaLoading=new Promise((res,rej)=>{
+    const sc=document.createElement('script');
+    sc.src=PETA_JS;
+    sc.onload=()=>window.PETA_L?res(window.PETA_L):rej(new Error('peta kosong'));
+    sc.onerror=()=>rej(new Error('peta gagal dimuat'));
+    document.head.appendChild(sc);
+  }).catch(e=>{petaLoading=null;throw e;});
+  return petaLoading;
+}
+function petaCovers(s,a){return juzOfPage(pageOfG(gAyah(s,a)))===29;}
+function openPeta(s,a){
+  const info=window.PETA_L&&window.PETA_L[keyOf(s,a)];
+  if(!info){location.href=mushafUrl(s,a);return;}
+  const ov=$('petaOv'),stage=$('petaStage'),img=$('petaImg'),msg=$('petaMsg'),sc=$('petaScroll');
+  stage.querySelectorAll('.peta-rect').forEach(n=>n.remove());
+  $('petaTitle').textContent=SN[s-1]+' ayat '+a+' \u00b7 hal. '+info.p;
+  $('petaExt').href=mushafUrl(s,a);
+  msg.classList.add('hidden');
+  let x0=1,y0=1,x1=0,y1=0;
+  info.r.forEach(r=>{
+    const d=document.createElement('div');
+    d.className='peta-rect';
+    d.style.cssText='left:'+r[0]*100+'%;top:'+r[1]*100+'%;width:'+r[2]*100+'%;height:'+r[3]*100+'%';
+    stage.appendChild(d);
+    x0=Math.min(x0,r[0]);y0=Math.min(y0,r[1]);x1=Math.max(x1,r[0]+r[2]);y1=Math.max(y1,r[1]+r[3]);
+  });
+  function focusRects(){
+    sc.scrollLeft=(x0+x1)/2*stage.clientWidth-sc.clientWidth/2;
+    sc.scrollTop=(y0+y1)/2*stage.clientHeight-sc.clientHeight/2;
+  }
+  img.onload=focusRects;
+  img.onerror=()=>msg.classList.remove('hidden');
+  img.removeAttribute('src');
+  img.src=PETA_IMG_BASE+'L/'+info.f+'.webp';
+  ov.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  sc.scrollLeft=0;sc.scrollTop=0;
+}
+function closePeta(){
+  $('petaOv').classList.add('hidden');
+  document.body.style.overflow='';
+}
+$('btnMushaf').addEventListener('click',e=>{
+  const s=+e.currentTarget.dataset.s,a=+e.currentTarget.dataset.a;
+  if(!s||!a||!petaCovers(s,a))return; // di luar Juz 29: tetap buka situs mushaf
+  e.preventDefault();
+  loadPeta().then(()=>openPeta(s,a)).catch(()=>{location.href=mushafUrl(s,a);});
+});
+$('petaClose').onclick=closePeta;
+$('petaHl').onclick=()=>$('petaOv').classList.toggle('off');
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('petaOv').classList.contains('hidden'))closePeta();});
 
 function computeSummary(set){
   let fullPages=0;
