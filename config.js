@@ -1,6 +1,5 @@
-/* Pengaturan untuk mushaf.html — gambar potret (P) & landscape (L) diambil dari repo Kuis Murojaah v3 */
+/* Pengaturan bersama juz-N.html & download-juz.html */
 window.CFG={
-  base:'https://quran144surat-create.github.io/kuis_murojaah_versi_3/',
   ext:'webp', pad:1, total:604,   // potret: P/juz 2/22.webp (1 halaman); landscape: L/juz 29/561,562.webp (2 halaman); juz 1 pakai 'Juz' huruf besar
   lNama:{},                      // pengecualian nama file landscape: {halamanAwalPasangan:'nama tanpa ekstensi'}
   juzStart:[1, 22, 42, 62, 82, 102, 122, 142, 162, 182, 202, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582], // sama dengan JUZ_PAGE_START di app kuis
@@ -10,7 +9,8 @@ window.CFG={
 // Mode gambar mengikuti posisi HP: landscape -> folder L (2 halaman per gambar), selain itu -> folder P.
 CFG.mode=function(){return matchMedia('(orientation:landscape)').matches?'L':'P'};
 // Alamat gambar halaman p. m = 'P' / 'L' (kosong = sesuai posisi HP saat ini).
-// Landscape: pasangan ganjil,genap (1-2, 3-4, ... 561,562); folder juz ditentukan oleh halaman KEDUA pasangan.
+// Landscape: pasangan ganjil,genap (1-2, 3-4, ... 561,562); halaman p dipetakan ke pasangannya,
+// dan folder juz ditentukan oleh halaman KEDUA pasangan (561,562 ada di folder juz 29).
 CFG.src=function(p,m){
   m=m||CFG.mode();
   const pad=n=>String(n).padStart(CFG.pad,'0');
@@ -18,5 +18,5 @@ CFG.src=function(p,m){
   let b=p,nama=pad(p);
   if(m==='L'){const a=p%2?p:p-1;b=Math.min(a+1,CFG.total);nama=CFG.lNama[a]||(pad(a)+','+pad(b))}
   const j=juzOf(b);
-  return CFG.base+encodeURI(m+'/'+(j===1?'Juz ':'juz ')+j+'/'+nama+'.'+CFG.ext);
+  return encodeURI(m+'/'+(j===1?'Juz ':'juz ')+j+'/'+nama+'.'+CFG.ext);
 };
