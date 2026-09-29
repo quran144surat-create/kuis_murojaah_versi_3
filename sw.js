@@ -1,52 +1,19 @@
-const VERSI = 'kuis-murojaah-v4';
-const FILE_APP = [
-  './', './index.html', './manifest.webmanifest',
-  './icon-192.png', './icon-512.png', './icon-maskable-512.png',
-  './apple-touch-icon.png', './favicon-32.png'
-];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSI).then(c => c.addAll(FILE_APP)).then(() => self.skipWaiting()));
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k.startsWith('kuis-murojaah-') && k !== VERSI).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-
-  // File app (satu origin): cache dulu, jaringan sebagai cadangan
-  if (url.origin === self.location.origin) {
-    e.respondWith(
-      caches.match(req, { ignoreSearch: true }).then(hit => {
-        if (hit) return hit;
-        return fetch(req).then(res => {
-          if (res.ok) { const salin = res.clone(); caches.open(VERSI).then(c => c.put(req, salin)); }
-          return res;
-        }).catch(() => req.mode === 'navigate' ? caches.match('./index.html') : Response.error());
-      })
-    );
-    return;
+// Naikkan angka versi bila file ini berubah. Halaman/skrip: cek internet dulu (selalu terbaru),
+// gambar mushaf: pakai simpanan offline dulu (hemat kuota, cepat).
+const V='shell-v3', IMG='mushaf-v1';
+const SHELL=['config.js','download-juz.html',...Array.from({length:30},(_,i)=>`juz-${i+1}.html`)];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)));self.skipWaiting()});
+self.addEventListener('activate',e=>e.waitUntil(
+  caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('shell-')&&k!==V).map(k=>caches.delete(k)))).then(()=>clients.claim())));
+self.addEventListener('fetch',e=>{
+  const r=e.request,u=new URL(r.url);
+  if(r.method!=='GET'||u.origin!==location.origin)return;
+  if(/\.(jpe?g|png|webp)$/i.test(u.pathname)){
+    e.respondWith(caches.match(r).then(hit=>hit||fetch(r)));
+  }else{
+    e.respondWith(fetch(r).then(res=>{
+      if(res.ok){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp))}
+      return res;
+    }).catch(()=>caches.match(r,{ignoreSearch:true})));
   }
-
-  // Font Google: simpan saat pertama kali online agar tampil sama saat offline
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    e.respondWith(
-      caches.open(VERSI).then(c => c.match(req).then(hit => {
-        const dariJaringan = fetch(req).then(res => {
-          if (res.ok || res.type === 'opaque') c.put(req, res.clone());
-          return res;
-        }).catch(() => hit);
-        return hit || dariJaringan;
-      }))
-    );
-  }
-  // Selain itu (mis. audio ayat) langsung lewat jaringan, tidak di-cache
 });
