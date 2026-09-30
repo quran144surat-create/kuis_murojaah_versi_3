@@ -141,11 +141,13 @@ $('jsel').onchange=e=>goto(C.juzStart[+e.target.value-1],false);
 $('ssel').onchange=e=>goto(pageOfAyah(+e.target.value,1),false);
 
 // Ketuk layar -> tampilkan/sembunyikan bilah. Geser halaman tidak memicu ketukan.
+// Layar penuh saat ketukan pertama hanya di tab browser; aplikasi terpasang sudah full layar sendiri.
 let firstTap=true;
+const isApp=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
 track.addEventListener('click',e=>{
   if(e.target.closest('button,select'))return;
   document.body.classList.toggle('ui');
-  if(firstTap&&matchMedia('(pointer:coarse)').matches&&document.fullscreenEnabled&&!document.fullscreenElement)
+  if(firstTap&&!isApp&&matchMedia('(pointer:coarse)').matches&&document.fullscreenEnabled&&!document.fullscreenElement)
     document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
   firstTap=false;
 });
