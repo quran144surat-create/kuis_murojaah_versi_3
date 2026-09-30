@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E4A3B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mushaf</title>
+<style>
+:root{--accent:#0E4A3B;--bg:#F2F1E7;--surface:#FBFAF4;--ink:#10231D;--muted:#586C63;--line:#DBDED0;--primary:#0E4A3B;--on:#F8F5E8;--gold:#EDE1BC;--goldink:#7A5D12}
+@media(prefers-color-scheme:dark){:root{--accent:#5CC9A7;--bg:#0A1512;--surface:#101F1A;--ink:#ECE8D8;--muted:#9DB0A6;--line:#203429;--primary:#1F7A60;--on:#F4F1E4;--gold:#3A3219;--goldink:#D9B96B}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button,select{font:600 13.5px system-ui,sans-serif;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 12px}
+h1{font-size:16px;margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header select{min-width:0;max-width:30vw;padding:9px 6px}
+.pill{background:var(--gold);color:var(--goldink);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
+#bmbtn{flex:none;padding:8px;display:grid;place-items:center}
+#bmbtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;display:block}
+#bmbtn.on{color:var(--goldink);border-color:var(--gold);background:var(--gold)}
+#bmbtn.on svg{fill:var(--goldink);stroke:var(--goldink)}
+/* Bilah disembunyikan; muncul saat layar diketuk */
+header,#bot{position:fixed;left:0;right:0;z-index:5;background:var(--surface);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease}
+header{top:0;transform:translateY(-100%);display:flex;direction:rtl;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
+#bot{bottom:0;transform:translateY(100%);border-top:1px solid var(--line)}
+#ind{text-align:center;font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 0 calc(5px + env(safe-area-inset-bottom,0px))}
+body.ui header,body.ui #bot{transform:none;opacity:1;pointer-events:auto}
+#track{position:fixed;inset:0;display:flex;direction:rtl;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+#track::-webkit-scrollbar{display:none}
+.pg{background:#FDFCF5;flex:0 0 100%;width:100%;height:100%;position:relative;scroll-snap-align:center;scroll-snap-stop:always;display:flex;direction:rtl;text-align:center;color:var(--muted);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.h{flex:1 1 0;min-width:0;height:100%;display:flex;align-items:center;justify-content:center}
+.h img{width:auto;height:100%;max-width:100%;object-fit:contain;-webkit-mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent);mask-image:linear-gradient(90deg,transparent,#000 2.5%,#000 97.5%,transparent)}
+.sp::after{content:"";position:absolute;top:0;bottom:0;left:calc(50% - min(9vw,130px));width:min(18vw,260px);pointer-events:none;background:linear-gradient(90deg,transparent,rgba(0,0,0,.16) 50%,transparent)}
+.msg{max-width:340px;padding:0 16px;direction:ltr}
+#homebtn{flex:none;padding:8px;display:grid;place-items:center;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none}
+#homebtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+#dlbtn{flex:none;padding:8px;display:grid;place-items:center}
+#dlbtn[hidden]{display:none}
+#dlbtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+#dlbox{position:fixed;z-index:6;left:12px;right:12px;top:calc(62px + env(safe-area-inset-top,0px));max-width:360px;margin-inline:auto;direction:ltr;text-align:left;display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#dlbox[hidden],body:not(.ui) #dlbox{display:none}
+#dlbar{width:100%;accent-color:var(--primary)}
+#dlgo{background:var(--primary);color:var(--on);border-color:var(--primary)}
+
+/* Perekam bacaan: ada di bilah bawah (muncul saat layar diketuk), jadi tidak pernah menimpa gambar halaman */
+#rc{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;padding:8px 10px 2px;direction:ltr}
+.rb{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center}
+.rb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+#rfab{width:48px;height:48px;background:var(--primary);color:var(--on);border-color:var(--primary);transition:box-shadow .08s linear}
+#rfab svg{width:24px;height:24px}
+#rfab.rec{background:#C0392B;border-color:#C0392B;box-shadow:0 0 0 calc(var(--lv,0)*10px) rgba(192,57,43,.35)}
+#rt{order:-1;flex:0 0 100%;text-align:center;font:600 13px system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink)}
+#rtools{display:flex;gap:8px}
+#rt[hidden],#rtools[hidden]{display:none}
+#reye{display:none} /* tombol mata sudah ada di bilah atas */
+/* Sembunyikan halaman (murojaah tanpa melihat) */
+body.hid .h{visibility:hidden}
+#hbtn{flex:none;padding:8px;display:grid;place-items:center}
+#hbtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+#hbtn.on,#reye.on{color:var(--goldink);border-color:var(--gold);background:var(--gold)}
+#hbtn,#reye{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+/* tekan lama pada halaman: tanpa menu salin/unduh/bagikan gambar bawaan browser */
+#track,#track img,.ao i{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+#rg{display:flex;align-items:center;height:40px;padding:0 2px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:99px}
+#rg button{width:34px;height:34px;padding:0;border:0;border-radius:50%;background:transparent;color:inherit;box-shadow:none;font:700 18px/1 system-ui,sans-serif}
+#rg button:disabled{opacity:.3}
+#rgain{min-width:34px;text-align:center;font:700 13px system-ui,sans-serif;font-variant-numeric:tabular-nums}
+#rnr{font:700 10px/1.15 system-ui,sans-serif}
+#rnr.on{color:var(--goldink);border-color:var(--gold);background:var(--gold)}
+#rfab:disabled{opacity:.6}
+
+/* Murattal: kotak ayat di atas gambar, pemutar mengambang, pengaturan ulang & rentang */
+.h{position:relative}
+.ao{position:absolute;pointer-events:none;direction:ltr}
+.ao i{position:absolute;border-radius:5px;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+body.aud .ao i{cursor:pointer}
+.ao i.on{background:rgba(214,170,40,.36)}
+#abtn{flex:none;padding:8px;display:grid;place-items:center}
+#abtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+#abtn.on{color:var(--goldink);border-color:var(--gold);background:var(--gold)}
+#ap{display:none;flex-direction:column;align-items:center;gap:8px;direction:ltr;padding:8px 10px 0}
+body.pl #ap{display:flex}
+#apb{display:flex;align-items:center;justify-content:center;gap:2px;max-width:100%}
+#apb .rb{flex:none}
+#aplay{background:var(--primary);color:var(--on);border-color:var(--primary)}
+#aopt.on{color:var(--goldink);border-color:var(--gold);background:var(--gold)}
+#alb{min-width:84px;max-width:38vw;padding:0 6px;text-align:center;font:600 12.5px system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aset{width:min(420px,100%);max-height:42vh;overflow:auto;display:grid;gap:8px;background:transparent;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left}
+#aset[hidden],#arb[hidden],#at[hidden]{display:none}
+#aset .al{font:600 12.5px system-ui,sans-serif;color:var(--muted)}
+#aset .sw{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:13.5px}
+#aset .sw input{width:18px;height:18px;accent-color:var(--primary)}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:9px 4px}
+.seg button.on{background:var(--primary);color:var(--on);border-color:var(--primary)}
+#arb{display:grid;gap:6px}
+.ar{display:grid;grid-template-columns:1fr 84px;gap:6px}
+.ar select{min-width:0;max-width:none;width:100%}
+#at{background:var(--ink);color:var(--bg);border-radius:99px;padding:7px 14px;font:600 12.5px system-ui,sans-serif;max-width:calc(100vw - 24px);text-align:center}
+
+/* ===== Gaya minimalis: halaman mushaf jadi bintang, kontrol disembunyikan sampai diketuk ===== */
+header,#bot{background:color-mix(in srgb,var(--surface) 76%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5)}
+header{gap:4px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent);padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:4px}
+#bot{border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+#homebtn,#bmbtn,#morebtn{flex:none;width:42px;height:42px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--accent);box-shadow:none}
+#homebtn svg,#bmbtn svg,#morebtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block}
+#bmbtn.on{color:var(--goldink);border:0;background:transparent}
+#bmbtn.on svg{fill:var(--goldink);stroke:var(--goldink)}
+#ttl{direction:ltr;flex:1;min-width:0;border:0;background:transparent;box-shadow:none;padding:8px 6px;font:700 16px system-ui,sans-serif;color:var(--ink);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ttl::after{content:"\25BE";color:var(--muted);margin-inline-start:6px;font-size:12px}
+.rb{border:0;background:transparent;color:var(--accent)}
+#rfab:disabled{opacity:.6}
+/* menu ⋯ */
+#menu{position:fixed;z-index:7;top:calc(52px + env(safe-area-inset-top,0px));left:max(10px,env(safe-area-inset-left,0px));min-width:236px;display:grid;padding:6px;direction:ltr;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+#menu[hidden],body:not(.ui) #menu{display:none}
+#menu button{display:flex;align-items:center;gap:12px;width:100%;flex:none;padding:12px 12px;border:0;border-radius:10px;background:transparent;color:var(--ink);text-align:left;font:600 14px system-ui,sans-serif}
+#menu button[hidden],#menu #reye{display:none}
+#menu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block;flex:none;color:var(--accent)}
+#menu button.on{color:var(--goldink);background:var(--gold)}
+#menu button.on svg{color:var(--goldink)}
+/* lembar bawah (navigasi & aksi ayat) */
+.scrim{position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;direction:ltr}
+.scrim[hidden]{display:none}
+.sheet{width:min(480px,100%);display:grid;gap:10px;padding:10px 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--surface);border-radius:18px 18px 0 0;text-align:left}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 2px}
+.sh-t{display:flex;align-items:center;justify-content:space-between;gap:8px;font:700 16px system-ui,sans-serif}
+.fld{display:grid;gap:4px;font:600 12.5px system-ui,sans-serif;color:var(--muted)}
+.fld select{width:100%;padding:12px 10px;font-size:15px}
+.row{display:flex;align-items:center;gap:14px;width:100%;padding:13px 6px;border:0;border-radius:10px;background:transparent;color:var(--ink);text-align:left;font:600 15px system-ui,sans-serif}
+.row svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;color:var(--accent)}
+.row.on,.row.on svg{color:var(--goldink)}
+/* bilah bawah: satu baris = pengaturan rekaman, nomor halaman, tombol rekam */
+#rc{flex-wrap:nowrap;padding:6px 10px 0}
+#rc:not(:has(#rt:not([hidden]),#rtools:not([hidden]))){display:none}
+#rt{order:0;flex:none}
+#rset{display:flex;justify-content:center;align-items:center;gap:12px;padding:8px 10px 0;direction:ltr}
+#rset[hidden]{display:none}
+#rg{border:0;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+#brow{display:flex;align-items:center;gap:6px;direction:ltr;padding:4px 10px calc(4px + env(safe-area-inset-bottom,0px))}
+#brow #ind{flex:1;padding:0}
+#rcfg.on{color:var(--goldink);background:var(--gold)}
+/* toast murattal */
+#at{position:fixed;z-index:9;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));pointer-events:none;width:max-content;direction:ltr}
+body.ui #at{bottom:calc(var(--bh,96px) + 12px)}
+#aq{font:600 12px system-ui,sans-serif;color:var(--muted)}
+#ash{background:transparent;align-items:stretch;justify-content:stretch}
+#apop{position:fixed;display:flex;background:var(--primary);color:var(--on);border-radius:12px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.3);direction:ltr}
+#apop::after{content:"";position:absolute;left:var(--ax,50%);bottom:-4px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg)}
+#apop.dn::after{bottom:auto;top:-4px}
+#apop button{display:grid;justify-items:center;gap:2px;width:60px;padding:8px 2px;border:0;border-radius:8px;background:transparent;color:inherit;box-shadow:none;font:600 11px system-ui,sans-serif}
+#apop svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#apop button.on{color:var(--gold)}
+.ao i.sel{background:rgba(70,140,160,.3)}
+.row:disabled{opacity:.4}
+#qst{font:600 12.5px system-ui,sans-serif;color:var(--muted);min-height:1em}
+/* antarmuka bukan teks bacaan: jangan bisa diblok/disalin; pesan error gambar tetap bisa */
+html,body{-webkit-tap-highlight-color:transparent}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.msg,.msg *{-webkit-user-select:text;user-select:text}
+#track,button,a,select{touch-action:manipulation}
+/* tombol kembali kecil (pengganti tombol kembali HP saat layar penuh); hanya tampil saat bilah disembunyikan */
+#bk{position:fixed;z-index:4;left:max(8px,env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:34px;height:34px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:color-mix(in srgb,var(--surface) 60%,transparent);color:var(--accent);opacity:.55;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:none}
+#bk:active{opacity:.9}
+#bk svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;display:block}
+body.ui #bk{display:none}
+</style></head><body>
+<header>
+  <a id="homebtn" href="index.html" aria-label="Kembali ke halaman awal"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5 10v10h5v-6h4v6h5V10"/></svg></a>
+  <button id="ttl" aria-label="Pindah juz, surat, atau halaman" aria-haspopup="dialog">Juz 1</button>
+  <button id="bmbtn" aria-label="Tandai halaman ini"><svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg></button>
+  <button id="morebtn" aria-label="Menu" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg></button>
+</header>
+<div id="menu" role="menu" hidden>
+  <button id="hbtn"></button>
+  <button id="qbtn" aria-label="Pilih qori"></button>
+  <button id="dlbtn" aria-label="Simpan untuk offline"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg><span>Unduh untuk offline</span></button>
+  <button id="reye"></button>
+</div>
+<div id="nav" class="scrim" hidden><div class="sheet" role="dialog" aria-label="Pindah halaman">
+  <div class="grab"></div>
+  <div class="sh-t"><span>Pindah ke</span><span class="pill" id="info" hidden></span></div>
+  <label class="fld">Juz<select id="jsel" aria-label="Juz"></select></label>
+  <label class="fld">Surat<select id="ssel" aria-label="Surat"></select></label>
+  <label class="fld">Halaman<select id="sel" aria-label="Halaman"></select></label>
+</div></div>
+<div id="ash" class="scrim" hidden><div id="apop" role="menu">
+  <button id="aph"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><span>Putar</span></button>
+  <button id="abm"><svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg><span>Tandai</span></button>
+  <button id="acopy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><span>Salin</span></button>
+  <button id="ashare"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.9 7.6-4.4M8.2 13.1l7.6 4.4"/></svg><span>Bagikan</span></button>
+</div></div>
+<div id="qs" class="scrim" hidden><div class="sheet" role="dialog" aria-label="Pilih qori"><div class="grab"></div><div class="sh-t"><span>Qori</span></div><div id="ql"></div>
+  <button id="qoff" class="row"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg><span>Simpan juz ini offline</span></button><div id="qst"></div></div></div>
+<div id="at" hidden role="status"></div>
+<main id="track"></main>
+<button id="bk" aria-label="Kembali"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+
+<div id="dlbox" hidden><div id="dltxt">Memeriksa…</div><progress id="dlbar" value="0"></progress><button id="dlgo">Unduh semua halaman</button></div>
+<div id="bot">
+  <div id="rset" hidden>
+    <div id="rg" role="group" aria-label="Penguatan suara"><button id="rgm" aria-label="Kurangi penguatan">−</button><span id="rgain" aria-live="polite"></span><button id="rgp" aria-label="Tambah penguatan">+</button></div>
+    <button id="rnr" class="rb" aria-label="Peredam bising"></button>
+  </div>
+  <div id="ap">
+    <div id="aq"></div>
+    <div id="aset" hidden>
+      <div class="al">Ulangi tiap ayat</div>
+      <div class="seg" id="arep"><button data-r="1">1&times;</button><button data-r="2">2&times;</button><button data-r="3">3&times;</button><button data-r="0">Tanpa batas</button></div>
+      <label class="sw"><input type="checkbox" id="arng"> Atur rentang ayat</label>
+      <div id="arb" hidden>
+        <div class="al">Mulai</div><div class="ar"><select id="rs_s" aria-label="Surat mulai"></select><select id="rs_a" aria-label="Ayat mulai"></select></div>
+        <div class="al">Selesai</div><div class="ar"><select id="re_s" aria-label="Surat selesai"></select><select id="re_a" aria-label="Ayat selesai"></select></div>
+        <button id="apg">Isi dari halaman ini</button>
+        <div class="al">Ulangi seluruh rentang</div>
+        <div class="seg" id="arr"><button data-r="1">1&times;</button><button data-r="2">2&times;</button><button data-r="3">3&times;</button><button data-r="0">Tanpa batas</button></div>
+      </div>
+    </div>
+    <div id="apb">
+      <button id="aprev" class="rb" aria-label="Ayat sebelumnya"></button>
+      <button id="aplay" class="rb" aria-label="Putar murattal"></button>
+      <button id="anext" class="rb" aria-label="Ayat berikutnya"></button>
+      <button id="astop" class="rb" aria-label="Berhenti"></button>
+      <span id="alb">Murattal</span>
+      <button id="aopt" class="rb" aria-label="Pengaturan murattal"></button>
+    </div>
+  </div>
+  <div id="rc"><span id="rt" hidden></span>
+    <div id="rtools" hidden><button id="rplay" class="rb" aria-label="Putar rekaman"></button><button id="rredo" class="rb" aria-label="Rekam ulang"></button><button id="rdl" class="rb" aria-label="Unduh rekaman"></button><button id="rdel" class="rb" aria-label="Hapus rekaman"></button></div>
+  </div>
+  <div id="brow"><button id="rcfg" class="rb" aria-label="Pengaturan rekaman"></button><div id="ind"></div><button id="rfab" class="rb" aria-label="Rekam bacaan"></button></div>
+</div>
+<script src="config.js"></script>
+<script>
+const C=CFG,$=id=>document.getElementById(id),T=C.total,src=C.src;
+const juzOf=p=>{for(let j=29;j>=0;j--)if(p>=C.juzStart[j])return j+1;return 1};
+function pageOfAyah(s,a){
+  const g=C.ay.slice(0,s-1).reduce((x,y)=>x+y,0)+a;let lo=0,hi=T-1;
+  while(lo<hi){const m=(lo+hi+1)>>1;if(C.ps[m]<=g)lo=m;else hi=m-1}
+  return lo+1;
+}
+const q=new URLSearchParams(location.search),s=+q.get('s'),a=+q.get('a');
+const ayahPage=s&&a?pageOfAyah(s,a):0;
+let cur=Math.min(Math.max(ayahPage||+q.get('p')||1,1),T);
+if(ayahPage){$('info').textContent='QS '+s+':'+a;$('info').hidden=false}
+const SN="Al-Fatihah|Al-Baqarah|Ali 'Imran|An-Nisa'|Al-Ma'idah|Al-An'am|Al-A'raf|Al-Anfal|At-Taubah|Yunus|Hud|Yusuf|Ar-Ra'd|Ibrahim|Al-Hijr|An-Nahl|Al-Isra'|Al-Kahfi|Maryam|Taha|Al-Anbiya'|Al-Hajj|Al-Mu'minun|An-Nur|Al-Furqan|Asy-Syu'ara'|An-Naml|Al-Qasas|Al-'Ankabut|Ar-Rum|Luqman|As-Sajdah|Al-Ahzab|Saba'|Fatir|Yasin|As-Saffat|Sad|Az-Zumar|Gafir|Fussilat|Asy-Syura|Az-Zukhruf|Ad-Dukhan|Al-Jasiyah|Al-Ahqaf|Muhammad|Al-Fath|Al-Hujurat|Qaf|Az-Zariyat|At-Tur|An-Najm|Al-Qamar|Ar-Rahman|Al-Waqi'ah|Al-Hadid|Al-Mujadalah|Al-Hasyr|Al-Mumtahanah|As-Saff|Al-Jumu'ah|Al-Munafiqun|At-Tagabun|At-Talaq|At-Tahrim|Al-Mulk|Al-Qalam|Al-Haqqah|Al-Ma'arij|Nuh|Al-Jinn|Al-Muzzammil|Al-Muddassir|Al-Qiyamah|Al-Insan|Al-Mursalat|An-Naba'|An-Nazi'at|'Abasa|At-Takwir|Al-Infitar|Al-Mutaffifin|Al-Insyiqaq|Al-Buruj|At-Tariq|Al-A'la|Al-Gasyiyah|Al-Fajr|Al-Balad|Asy-Syams|Al-Lail|Ad-Duha|Asy-Syarh|At-Tin|Al-'Alaq|Al-Qadr|Al-Bayyinah|Az-Zalzalah|Al-'Adiyat|Al-Qari'ah|At-Takasur|Al-'Asr|Al-Humazah|Al-Fil|Quraisy|Al-Ma'un|Al-Kausar|Al-Kafirun|An-Nasr|Al-Lahab|Al-Ikhlas|Al-Falaq|An-Nas".split('|');
+// cum[i] = jumlah ayat sebelum surat ke-(i+1); dipakai memetakan nomor ayat global -> surat
+const cum=[];C.ay.reduce((x,y,i)=>(cum[i]=x,x+y),0);
+const TA=C.ay.reduce((x,y)=>x+y,0);
+const surahOf=g=>{let lo=0,hi=C.ay.length-1;while(lo<hi){const m=(lo+hi+1)>>1;if(cum[m]<g)lo=m;else hi=m-1}return lo+1};
+for(let j=1;j<=30;j++)$('jsel').add(new Option('Juz '+j,j));
+SN.forEach((n,i)=>$('ssel').add(new Option((i+1)+'. '+n,i+1)));
+for(let i=1;i<=T;i++)$('sel').add(new Option('Hal. '+i,i));
+
+const track=$('track'),mq=matchMedia('(orientation:landscape)');
+let spread=mq.matches,cells={},loaded=new Set(),loadObs,curObs,rz=false,curUrl=null;
+const start=n=>spread?(n%2?n:n-1):n;
+
+function loadImg(h){
+  if(h.dataset.done)return;h.dataset.done=1;loaded.add(h);const n=+h.dataset.p;
+  const im=new Image();im.alt='Halaman '+n;im.addEventListener('load',()=>window.audOv&&audOv(h,im));
+  im.onerror=()=>{h.innerHTML='<div class="msg">Gambar halaman '+n+' tidak ditemukan.<br>Yang dicari: <code dir="ltr">'+src(n)+'</code><br>Cocokkan nama folder dan file di repo dengan <code dir="ltr">config.js</code>, atau kalau sedang offline, halaman ini belum tersimpan di perangkat</div>'};
+  const u=src(n);try{if(new URL(u,location.href).origin!==location.origin)im.crossOrigin='anonymous'}catch(e){}
+  im.src=u;h.appendChild(im);
+}
+// buang gambar yang sudah jauh dari halaman aktif supaya memori tidak menumpuk
+function unloadFar(){loaded.forEach(h=>{if(Math.abs(+h.dataset.p-cur)>12){h.replaceChildren();delete h.dataset.done;loaded.delete(h)}})}
+// Penanda (bookmark) & posisi terakhir dibaca — disimpan di localStorage,
+// dipakai bersama oleh index.html (tab PENANDA, tombol "Lanjut membaca").
+const bm=()=>{try{return JSON.parse(localStorage.getItem('quran.bm')||'[]')}catch(e){return[]}};
+const saveBm=a=>{try{localStorage.setItem('quran.bm',JSON.stringify(a))}catch(e){}};
+function syncBm(n){$('bmbtn').classList.toggle('on',bm().includes(n))}
+$('bmbtn').onclick=()=>{
+  const a=bm(),i=a.indexOf(cur);
+  if(i>-1)a.splice(i,1);else a.push(cur);
+  saveBm(a);syncBm(cur);
+};
+function setCur(n){
+  cur=n;$('sel').value=n;
+  const j=juzOf(n);$('jsel').value=j;
+  // surat yang tampil di halaman aktif; pilihan pengguna dipertahankan bila masih ada di halaman ini
+  const e=spread&&n<T?n+1:n,s1=surahOf(C.ps[n-1]),s2=surahOf(e<T?C.ps[e]-1:TA),sv=+$('ssel').value;
+  $('ssel').value=(sv>=s1&&sv<=s2)?sv:s1;
+  $('ttl').textContent='Juz '+j+' \u00b7 '+SN[+$('ssel').value-1];
+  $('ind').textContent='Hal. '+(spread&&n<T?n+'–'+(n+1):n)+' / '+T;
+  const hasAyah=ayahPage&&(ayahPage===n||(spread&&ayahPage===n+1));
+  curUrl='?p='+n+(hasAyah?'&s='+s+'&a='+a:'');history.replaceState(null,'',curUrl);
+  try{localStorage.setItem('quran.last',n)}catch(e){}
+  syncBm(n);
+  window.recSync&&recSync(n);
+  unloadFar();
+}
+function goto(n,smooth){
+  const c=cells[start(n)];
+  if(c)c.scrollIntoView({behavior:smooth?'smooth':'instant',inline:'center',block:'nearest'});
+}
+// Urutan DOM = urutan baca Arab (direction:rtl): elemen pertama ada di paling KANAN.
+// Mode 2 halaman: ganjil di kanan, genap di kiri (1|2, 3|4, ...).
+function build(){
+  loadObs&&loadObs.disconnect();curObs&&curObs.disconnect();
+  track.replaceChildren();cells={};loaded.clear();
+  const step=spread?2:1,frag=document.createDocumentFragment();
+  for(let i=1;i<=T;i+=step){
+    const d=document.createElement('div');d.className='pg';d.dataset.p=i;
+    // potret: 1 gambar = 1 halaman; landscape: 1 gambar (i,i+1) sudah berisi 2 halaman
+    const h=document.createElement('div');h.className='h';h.dataset.p=i;d.appendChild(h);
+    cells[i]=d;frag.appendChild(d);
+  }
+  track.appendChild(frag);
+  loadObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.querySelectorAll('.h').forEach(loadImg)}),{root:track,rootMargin:'0px 100% 0px 100%'});
+  curObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&!rz)setCur(+e.target.dataset.p)}),{root:track,threshold:0.6});
+  const c=start(cur);
+  cells[c].querySelectorAll('.h').forEach(loadImg);
+  setCur(c);goto(c,false);
+  for(const k in cells){loadObs.observe(cells[k]);curObs.observe(cells[k])}
+  requestAnimationFrame(()=>goto(cur,false));
+}
+build();
+mq.addEventListener('change',()=>{spread=mq.matches;build()});
+// Ukuran layar berubah (fullscreen masuk/keluar, bilah sistem, rotasi): tahan pergantian halaman aktif sampai ukuran stabil, lalu ratakan ulang sekali
+let rt;const hold=()=>{rz=true;clearTimeout(rt);rt=setTimeout(()=>{goto(cur,false);requestAnimationFrame(()=>{rz=false})},200)};
+addEventListener('resize',hold);
+document.addEventListener('fullscreenchange',hold);
+
+$('sel').onchange=e=>goto(+e.target.value,false);
+$('jsel').onchange=e=>goto(C.juzStart[+e.target.value-1],false);
+$('ssel').onchange=e=>goto(pageOfAyah(+e.target.value,1),false);
+
+// Tekan lama / seret gambar halaman tidak memunculkan menu bawaan browser
+track.addEventListener('contextmenu',e=>e.preventDefault());
+track.addEventListener('dragstart',e=>e.preventDefault());
+// Ketuk layar -> tampilkan/sembunyikan bilah. Geser halaman tidak memicu ketukan.
+let firstTap=true;
+track.addEventListener('click',e=>{
+  if(e.target.closest('button,select'))return;
+  document.body.classList.toggle('ui');
+  if(firstTap&&!(matchMedia('(display-mode: fullscreen), (display-mode: standalone), (display-mode: minimal-ui)').matches||navigator.standalone)&&matchMedia('(pointer:coarse)').matches&&document.fullscreenEnabled&&!document.fullscreenElement)
+    document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
+  firstTap=false;
+});
+// Panah keyboard: kiri = berikutnya (searah mushaf Arab)
+addEventListener('keydown',e=>{
+  const st=spread?2:1;
+  if(e.key==='ArrowLeft'&&cur+st<=T)goto(cur+st,true);
+  if(e.key==='ArrowRight'&&cur-st>=1)goto(cur-st,true);
+});
+// Menu ⋯, lembar navigasi (ketuk judul), dan perapian bilah
+const navSheet=$('nav'),menu=$('menu'),more=$('morebtn');
+const setMenu=o=>{menu.hidden=!o;more.setAttribute('aria-expanded',o)};
+more.onclick=()=>setMenu(menu.hidden);
+menu.addEventListener('click',e=>{if(e.target.closest('button'))setMenu(false)});
+// ketukan di luar menu hanya menutup menu, tidak ikut menyembunyikan bilah
+document.addEventListener('click',e=>{if(!menu.hidden&&!e.target.closest('#menu,#morebtn')){e.stopPropagation();setMenu(false)}},true);
+$('ttl').onclick=()=>{setMenu(false);navSheet.hidden=false};
+navSheet.addEventListener('click',e=>{if(e.target===navSheet)navSheet.hidden=true});
+['jsel','ssel','sel'].forEach(id=>$(id).addEventListener('change',()=>{navSheet.hidden=true}));
+new MutationObserver(()=>{if(!document.body.classList.contains('ui')){setMenu(false);$('dlbox').hidden=true;$('rset').hidden=true;$('rcfg').classList.remove('on')}}).observe(document.body,{attributes:true,attributeFilter:['class']});
+addEventListener('keydown',e=>{if(e.key==='Escape'){navSheet.hidden=true;$('ash').hidden=true;$('qs').hidden=true;$('dlbox').hidden=true;setMenu(false)}});
+// Tombol kembali perangkat: tutup lapisan yang terbuka (popup ayat, sheet qori/navigasi, kotak unduh, menu) dulu; baru keluar bila tidak ada
+(()=>{
+  const ovs=[$('ash'),$('qs'),navSheet,$('dlbox'),menu];
+  let pushed=false,wait=false;
+  const fixUrl=()=>{if(curUrl)history.replaceState(null,'',curUrl)};
+  const sync=()=>{
+    if(wait)return;
+    const o=ovs.some(x=>!x.hidden);
+    if(o&&!pushed){history.pushState({ov:1},'');pushed=true}
+    else if(!o&&pushed){wait=true;history.back()}
+  };
+  const mo=new MutationObserver(sync);
+  ovs.forEach(x=>mo.observe(x,{attributes:true,attributeFilter:['hidden']}));
+  addEventListener('popstate',()=>{
+    if(wait){wait=false;pushed=false;fixUrl();sync();return} // entri riwayat dilepas karena lapisan ditutup lewat layar
+    if(!pushed)return;
+    pushed=false;fixUrl();
+    const t=ovs.find(x=>!x.hidden);
+    if(t===menu)setMenu(false);else if(t)t.hidden=true;
+    sync();
+  });
+  // tombol kembali kecil: tutup lapisan bila ada, kalau tidak kembali ke halaman sebelumnya (atau beranda)
+  $('bk').onclick=()=>{
+    if(ovs.some(x=>!x.hidden)||history.length>1){history.back();return}
+    location.href='index.html';
+  };
+})();
+if(location.protocol.startsWith('http')&&navigator.serviceWorker)navigator.serviceWorker.register('sw.js');
+
+// Simpan semua gambar untuk offline (Cache API, bukan localStorage).
+// Cache 'mushaf-v1' dan alamat gambar sama dengan Kuis Murojaah v3, jadi unduhan di salah satu app terlihat di app satunya.
+(()=>{
+  const dlb=$('dlbtn'),box=$('dlbox'),bar=$('dlbar'),txt=$('dltxt'),gob=$('dlgo');
+  if(!window.caches||!location.protocol.startsWith('http')){dlb.hidden=true;return}
+  const CN='mushaf-v1';
+  // potret (1 gambar per halaman) + landscape (1 gambar per pasangan halaman)
+  const ALL=(()=>{const st=new Set();for(let i=1;i<=T;i++){st.add(new URL(src(i,'P'),location.href).href);st.add(new URL(src(i,'L'),location.href).href)}return[...st]})();
+  const N=ALL.length;
+  bar.max=N;let run=false,stop=false;
+  async function missing(c){
+    const set=new Set((await c.keys()).map(r=>r.url));
+    return ALL.filter(u=>!set.has(u));
+  }
+  async function refresh(){
+    if(run)return;
+    const n=N-(await missing(await caches.open(CN))).length;
+    bar.value=n;
+    txt.textContent=n>=N?'Semua halaman (potret & landscape) sudah tersimpan. Bisa dibaca tanpa internet.':n+' / '+N+' gambar tersimpan di perangkat.';
+    gob.textContent=n>=N?'Periksa lagi':(n?'Lanjutkan unduh':'Unduh semua halaman');
+  }
+  async function start(){
+    run=true;stop=false;gob.textContent='Berhenti';
+    try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+    const c=await caches.open(CN),todo=await missing(c);
+    let done=N-todo.length,fail=0,streak=0,i=0;
+    const upd=()=>{bar.value=done;txt.textContent=done+' / '+N+' gambar tersimpan'+(fail?' · '+fail+' gagal':'')};
+    upd();
+    const w=async()=>{
+      while(!stop&&streak<8&&i<todo.length){
+        const u=todo[i++];
+        try{const r=await fetch(u,{mode:'cors'});if(!r.ok)throw 0;await c.put(u,r);done++;streak=0}
+        catch(e){fail++;streak++}
+        upd();
+      }
+    };
+    await Promise.all([w(),w(),w(),w()]);
+    run=false;const left=N-done;
+    txt.textContent=left?done+' / '+N+' tersimpan. '+(streak>=8?'Ada yang gagal (koneksi, penyimpanan penuh, atau gambar belum ada di repo).':'Dihentikan.')+' Tekan lanjutkan.':'Selesai! Semua gambar tersimpan.';
+    gob.textContent=left?'Lanjutkan unduh':'Periksa lagi';
+  }
+  dlb.onclick=()=>{box.hidden=!box.hidden;if(!box.hidden)refresh()};
+  gob.onclick=()=>run?(stop=true):start();
+})();
+
+// Perekam bacaan: rekaman per halaman, disimpan di IndexedDB (tetap ada setelah ditutup), bisa diunduh.
+(()=>{
+const fab=$('rfab'),tools=$('rtools'),rt=$('rt'),play=$('rplay'),mem={};
+const svg=p=>'<svg viewBox="0 0 24 24">'+p+'</svg>';
+const I={mic:'<path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',play:'<path d="M8 5v14l11-7z" fill="currentColor"/>',pause:'<path d="M9 5v14M15 5v14"/>'};
+fab.innerHTML=svg(I.mic);play.innerHTML=svg(I.play);
+$('rcfg').innerHTML=svg('<path d="M6 4v6M6 14v6M12 4v2M12 10v10M18 4v10M18 18v2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="8" r="2"/><circle cx="18" cy="16" r="2"/>');
+$('rcfg').onclick=()=>{const r=$('rset');r.hidden=!r.hidden;$('rcfg').classList.toggle('on',!r.hidden)};
+// penguatan suara (tombol - / +, tidak berputar) dan peredam bising bertingkat
+const gb=$('rgain'),gm=$('rgm'),gp=$('rgp'),nb=$('rnr'),GL=[1,1.5,2,3,4];
+let gi=1,gv=GL[gi],gainNode=null;
+try{const i=GL.indexOf(+localStorage.getItem('quran.gain'));if(i>=0)gi=i}catch(e){}
+gv=GL[gi];
+const gpaint=()=>{gb.textContent=gv+'\u00d7';gm.disabled=gi===0;gp.disabled=gi===GL.length-1;$('rg').setAttribute('aria-label','Penguatan suara '+gv+'\u00d7')};
+const gset=d=>{const n=Math.max(0,Math.min(GL.length-1,gi+d));if(n===gi)return;gi=n;gv=GL[gi];try{localStorage.setItem('quran.gain',gv)}catch(e){}gpaint();if(gainNode&&ctx)gainNode.gain.setTargetAtTime(gv,ctx.currentTime,.05)};
+gm.onclick=()=>gset(-1);gp.onclick=()=>gset(1);gpaint();
+// peredam bising: filter + gerbang adaptif (k = pengali ambang di atas noise latar, d = pelemahan saat senyap)
+const NL=[{n:'Mati',s:'Mati',hp:80,lp:0,k:0,d:1},{n:'Ringan',s:'Ring',hp:100,lp:12000,k:0,d:1},{n:'Sedang',s:'Sedg',hp:120,lp:10000,k:2.5,d:.5},{n:'Kuat',s:'Kuat',hp:140,lp:9000,k:3.5,d:.25}];
+let nv=1,nrn=null;
+try{const x=localStorage.getItem('quran.nr');if(x!==null&&NL[+x])nv=+x}catch(e){}
+const npaint=()=>{nb.innerHTML='<span>NR</span><span>'+NL[nv].s+'</span>';nb.setAttribute('aria-label','Peredam bising: '+NL[nv].n+'. Ketuk untuk ganti');nb.classList.toggle('on',nv>0)};
+nb.onclick=()=>{nv=(nv+1)%NL.length;try{localStorage.setItem('quran.nr',nv)}catch(e){}npaint();
+  if(nrn&&ctx){const L=NL[nv],t=ctx.currentTime,ny=ctx.sampleRate*.45;nrn.hp.frequency.setTargetAtTime(L.hp,t,.05);nrn.lp.frequency.setTargetAtTime(Math.min(L.lp||ny,ny),t,.05)}};
+npaint();
+// tab di latar belakang: timer melambat, jadi gerbang dibuka penuh agar tidak ada suara terpotong
+const onvis=()=>{if(nrn&&ctx&&document.hidden){nrn.gt=1;try{nrn.gate.gain.cancelScheduledValues(0);nrn.gate.gain.setValueAtTime(1,ctx.currentTime)}catch(e){}}};
+$('rredo').innerHTML=svg('<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/>');
+$('rdl').innerHTML=svg('<path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/>');
+$('rdel').innerHTML=svg('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>');
+const dbp=new Promise(r=>{try{const q=indexedDB.open('mushaf-rec',1);q.onupgradeneeded=()=>q.result.createObjectStore('r');q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(e){r(null)}});
+const tx=async(mode,fn)=>{const d=await dbp;if(!d)return null;return new Promise(r=>{try{const t=d.transaction('r',mode),q=fn(t.objectStore('r'));t.oncomplete=()=>r(q.result);t.onerror=t.onabort=()=>r(null)}catch(e){r(null)}})};
+const get=async k=>(await tx('readonly',s=>s.get(k)))||mem[k]||null;
+const put=async(k,v)=>{mem[k]=v;await tx('readwrite',s=>s.put(v,k))};
+const del=async k=>{delete mem[k];await tx('readwrite',s=>s.delete(k))};
+const mime=window.MediaRecorder?['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus','audio/webm'].find(m=>MediaRecorder.isTypeSupported(m))||'':'';
+const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+let busy=false,rec=null,stream,ctx,raf,t0,recPage,data=null,dataKey=null,playKey=null,recSpan=1,replaceKey=null,pctx=null,recPeak=0,audio=null,url=null,mt;
+function note(t){rt.hidden=false;rt.textContent=t;clearTimeout(mt);mt=setTimeout(()=>{if(!rec)rt.hidden=true},3500)}
+function stopAudio(){const a=audio;audio=null;playKey=null;if(a){a.onpause=a.onended=null;a.pause()}if(url){URL.revokeObjectURL(url);url=null}play.innerHTML=svg(I.play)}
+// Cari rekaman untuk halaman n: potret (halaman n) dan landscape (pasangan n,n+1) saling dikenali.
+async function find(n){
+  for(const k of spread?[n,n+1]:[n,n-1]){
+    if(k<1)continue;
+    const v=await get(k);
+    if(v&&(k===n||(spread?v.span!==2:v.span===2)))return{k,v};
+  }
+  return null;
+}
+async function sync(n){
+  if(rec)return;
+  const r=await find(n);
+  if(n!==cur||rec)return;
+  if(audio&&r&&playKey===r.k){data=r.v;dataKey=r.k;tools.hidden=false;return} // putaran tetap jalan saat layar diputar
+  stopAudio();
+  data=r?r.v:null;dataKey=r?r.k:null;tools.hidden=!r;
+}
+window.recSync=n=>{sync(n)};
+// Tanda sedang merekam tanpa tombol di atas halaman: warna bilah status + judul tab
+const tcm=document.querySelector('meta[name=theme-color]'),tcOrig=tcm&&tcm.content,ttl0=document.title;
+function recMark(on){if(tcm)tcm.content=on?'#C0392B':tcOrig;document.title=on?'\u25cf Merekam \u00b7 '+ttl0:ttl0}
+let hideT=0;
+$('bot').addEventListener('pointerdown',()=>clearTimeout(hideT));
+function release(){
+  recMark(false);clearTimeout(hideT);
+  clearInterval(raf);raf=0;
+  stream&&stream.getTracks().forEach(t=>{t.onended=null;t.stop()});stream=null;
+  ctx&&ctx.close().catch(()=>{});ctx=null;gainNode=null;nrn=null;
+  document.removeEventListener('visibilitychange',onvis);
+}
+function resetUI(){
+  fab.classList.remove('rec');fab.style.removeProperty('--lv');fab.innerHTML=svg(I.mic);
+  fab.setAttribute('aria-label','Rekam bacaan');fab.disabled=false;rt.hidden=true;
+}
+// Menyiapkan mikrofon + rantai audio. Mengembalikan teks error, atau null jika berhasil.
+async function begin(){
+  // semua pemrosesan bawaan browser dimatikan: pembatal gema membatasi suara sampai ~8 kHz dan membisukan jeda
+  stream=null;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,sampleRate:{ideal:48000},echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
+  catch(e){
+    if(e&&e.name==='OverconstrainedError'){try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}catch(e2){}}
+  }
+  if(!stream)return 'Izinkan akses mikrofon (perlu HTTPS)';
+  const chunks=[];
+  // mikrofon -> high-pass -> low-pass -> [deteksi] -> tunda 60 ms -> gerbang -> penguat -> pembatas -> direkam
+  {const A=window.AudioContext||window.webkitAudioContext;try{ctx=new A({latencyHint:'playback'})}catch(e){ctx=new A()}}ctx.resume&&ctx.resume();
+  const L0=NL[nv],ny=ctx.sampleRate*.45;
+  const hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=L0.hp;hp.Q.value=.707;
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=Math.min(L0.lp||ny,ny);lp.Q.value=.707;
+  const det=ctx.createAnalyser();det.fftSize=2048;const dbuf=new Float32Array(2048);
+  const dl=ctx.createDelay(.2);dl.delayTime.value=.06; // gerbang sempat membuka sebelum awal kata tiba
+  const gate=ctx.createGain();gate.gain.value=1;
+  const g=ctx.createGain();g.gain.value=gv;gainNode=g;
+  const lim=ctx.createDynamicsCompressor();lim.threshold.value=-3;lim.knee.value=0;lim.ratio.value=20;lim.attack.value=.003;lim.release.value=.15;
+  const dest=ctx.createMediaStreamDestination();dest.channelCount=1;dest.channelCountMode='explicit';
+  const an=ctx.createAnalyser();an.fftSize=2048;const fbuf=new Float32Array(2048); // 2048 sampel (~43 ms) > interval timer, jadi puncak tidak terlewat
+  const og=ctx.createGain();og.gain.value=.89; // sisakan ~1 dB di bawah batas
+  ctx.createMediaStreamSource(stream).connect(hp);hp.connect(lp);lp.connect(det);lp.connect(dl);dl.connect(gate);gate.connect(g);g.connect(lim);lim.connect(og);og.connect(dest);og.connect(an);
+  nrn={hp,lp,gate,gt:1};document.addEventListener('visibilitychange',onvis);
+  const mr=new MediaRecorder(dest.stream,mime?{mimeType:mime,audioBitsPerSecond:/mp4/.test(mime)?256000:192000}:{audioBitsPerSecond:192000});
+  rec=mr;recPeak=0;recPage=cur;recSpan=spread?2:1;replaceKey=dataKey;t0=Date.now();
+  mr.ondataavailable=e=>{e.data&&e.data.size&&chunks.push(e.data)};
+  mr.onerror=()=>{try{mr.state!=='inactive'&&mr.stop()}catch(e){}};
+  stream.getAudioTracks().forEach(t=>{t.onended=()=>{try{mr.state==='recording'&&mr.stop()}catch(e){}}});
+  mr.onstop=async()=>{
+    const type=mr.mimeType||mime||'audio/webm',dur=(Date.now()-t0)/1000;
+    release(); // mikrofon langsung mati; tombol dikunci sampai rekaman tersimpan
+    fab.disabled=true;fab.classList.remove('rec');fab.style.removeProperty('--lv');rt.hidden=false;rt.textContent='Menyimpan\u2026';
+    try{
+      if(chunks.length){
+        await put(recPage,{blob:new Blob(chunks,{type}),type,dur,span:recSpan,peak:recPeak,ts:Date.now()});
+        if(replaceKey!=null&&replaceKey!==recPage)await del(replaceKey);
+      }
+      navigator.storage&&navigator.storage.persist&&navigator.storage.persist();
+    }catch(e){}
+    rec=null;resetUI();sync(cur);
+  };
+  // meteran level + gerbang bising (timer, bukan rAF, agar tetap jalan saat layar redup)
+  let floor=0,open=true,hold=0;
+  const tick=()=>{
+    an.getFloatTimeDomainData(fbuf);let m=0;for(let i=0;i<fbuf.length;i++){const v=Math.abs(fbuf[i]);if(v>m)m=v}
+    if(m>recPeak)recPeak=m;
+    const Lv=NL[nv],el=(Date.now()-t0)/1000;
+    if(!document.hidden&&nrn){
+      det.getFloatTimeDomainData(dbuf);let s=0;for(let i=0;i<dbuf.length;i++)s+=dbuf[i]*dbuf[i];const r=Math.sqrt(s/dbuf.length);
+      // noise latar: dipelajari cepat di 1,2 detik pertama, lalu turun cepat / naik pelan
+      if(el<1.2)floor=floor?floor*.9+r*.1:r;else floor=r<floor?floor*.5+r*.5:Math.min(floor*1.0025,.02);
+      floor=Math.max(floor,1e-4);
+      let tgt=1;
+      if(Lv.k&&el>=1.2){
+        const th=Math.max(floor*Lv.k,.004),now=performance.now();
+        if(r>th)hold=now+250;
+        open=r>th*(open?.7:1)||now<hold;
+        tgt=open?1:Lv.d;
+      }
+      if(tgt!==nrn.gt){nrn.gt=tgt;gate.gain.setTargetAtTime(tgt,ctx.currentTime,tgt===1?.006:.25)}
+    }
+    fab.style.setProperty('--lv',Math.min(1,m/.7).toFixed(2));
+    rt.textContent='\u25cf '+fmt(el)+' \u00b7 '+gv+'\u00d7'+(Lv.k||Lv.lp?' \u00b7 '+Lv.n:'')+(lim.reduction<-6?' \u00b7 terlalu keras, kurangi penguatan':(el>3&&recPeak<.03?' \u00b7 suara pelan, dekatkan mikrofon':''));
+  };
+  fab.classList.add('rec');fab.innerHTML=svg(I.stop);fab.setAttribute('aria-label','Berhenti merekam');fab.disabled=false;
+  tools.hidden=true;rt.hidden=false;
+  mr.start(1000);raf=setInterval(tick,30);tick();
+  recMark(true);
+  hideT=setTimeout(()=>{if(rec&&rec.state==='recording')document.body.classList.remove('ui')},3000); // bersihkan layar agar halaman terlihat penuh
+  return null;
+}
+async function start(){
+  if(rec||busy)return;
+  if(!navigator.mediaDevices||!window.MediaRecorder){note('Browser ini belum mendukung perekaman');return}
+  busy=true;stopAudio();window.audHalt&&audHalt();
+  tools.hidden=true;fab.disabled=true;rt.hidden=false;rt.textContent='Membuka mikrofon\u2026'; // kunci semua tombol sejak ketukan pertama
+  let err=null;
+  try{err=await begin()}catch(e){err='Gagal memulai perekaman'}
+  busy=false;
+  if(err){release();rec=null;resetUI();sync(cur);note(err)}
+}
+fab.onclick=()=>{if(rec){if(rec.state==='recording')rec.stop()}else start()};
+$('rredo').onclick=start;
+play.onclick=()=>{
+  if(audio){audio.paused?audio.play():audio.pause();return}
+  if(!data)return;
+  url=URL.createObjectURL(data.blob);playKey=dataKey;const a=audio=new Audio(url);
+  // normalisasi saat diputar: rekaman pelan dinaikkan sampai puncak ~0,8 (maks 8x), dengan pembatas
+  try{
+    pctx=pctx||new(window.AudioContext||window.webkitAudioContext)();pctx.resume&&pctx.resume();
+    const src=pctx.createMediaElementSource(a),pg=pctx.createGain(),pc=pctx.createDynamicsCompressor();
+    pg.gain.value=data.peak>0?Math.min(8,Math.max(1,.8/data.peak)):1;
+    pc.threshold.value=-1;pc.knee.value=0;pc.ratio.value=20;pc.attack.value=.003;pc.release.value=.15;
+    src.connect(pg);pg.connect(pc);pc.connect(pctx.destination);
+  }catch(e){}
+  a.onplay=()=>{play.innerHTML=svg(I.pause)};
+  a.onpause=()=>{play.innerHTML=svg(I.play)};
+  a.onended=stopAudio;
+  a.play().catch(stopAudio);
+};
+$('rdl').onclick=()=>{
+  if(!data)return;
+  const ext=/mp4/.test(data.type)?'m4a':/ogg/.test(data.type)?'ogg':'webm';
+  const u=URL.createObjectURL(data.blob),a=document.createElement('a');
+  a.href=u;a.download='mushaf-hal-'+dataKey+'.'+ext;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),4000);
+};
+$('rdel').onclick=async()=>{
+  if(dataKey==null||!confirm('Hapus rekaman halaman '+dataKey+'?'))return;
+  stopAudio();await del(dataKey);data=null;dataKey=null;tools.hidden=true;
+};
+sync(cur);
+})();
+
+// Sembunyikan/tampilkan halaman. Tahan tombol saat tersembunyi untuk mengintip. Status diingat.
+(()=>{
+const bs=[$('hbtn'),$('reye')];let hid=false,peek=false,pt,skip=false;
+const eye='<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+const paint=()=>bs.forEach(b=>{b.innerHTML='<svg viewBox="0 0 24 24">'+eye+(hid?'<path d="M4 4l16 16"/>':'')+'</svg><span>'+(hid?'Tampilkan halaman':'Sembunyikan halaman')+'</span>';b.classList.toggle('on',hid);b.setAttribute('aria-pressed',hid);b.setAttribute('aria-label',hid?'Tampilkan halaman':'Sembunyikan halaman')});
+const apply=()=>{document.body.classList.toggle('hid',hid&&!peek);paint()};
+try{hid=localStorage.getItem('quran.hide')==='1'}catch(e){}
+bs.forEach(b=>{
+  b.onpointerdown=()=>{if(!hid)return;skip=false;pt=setTimeout(()=>{peek=true;skip=true;apply()},350)};
+  const end=()=>{clearTimeout(pt);if(peek){peek=false;apply()}};
+  b.onpointerup=b.onpointercancel=b.onpointerleave=end;
+  b.oncontextmenu=e=>e.preventDefault();
+  b.onclick=()=>{if(skip){skip=false;return}hid=!hid;try{localStorage.setItem('quran.hide',hid?'1':'0')}catch(e){}apply()};
+});
+apply();
+})();
+
+// Tahan layar agar tidak mati selama mushaf tampil (Screen Wake Lock); dilepas otomatis saat ditutup.
+(()=>{
+if(!navigator.wakeLock)return;
+let lock=null,busy=false;
+const on=async()=>{
+  if(lock||busy||document.hidden)return;busy=true;
+  try{lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}catch(e){lock=null}
+  busy=false;
+};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)on()});
+['pointerdown','keydown','touchend'].forEach(t=>addEventListener(t,on,{passive:true}));
+on();
+})();
+
+// Murattal Syeikh Muhammad Ayyub (everyayah.com): ketuk ayat -> putar dari ayat itu, ulangi tiap ayat, atur rentang.
+// Kotak ayat dibaca dari ayah-boxes-P.json / ayah-boxes-L.json (tidak diubah, harus satu folder dengan mushaf.html).
+(()=>{
+const KEY='quran.aud';
+const RC=[{id:'ayyub',n:'Muhammad Ayyub',d:'Muhammad_Ayyoub_128kbps'},{id:'afasy',n:'Misyari Rasyid',d:'Alafasy_128kbps'},{id:'shatri',n:'Abu Bakr Ash-Shatri',d:'Abu_Bakr_Ash-Shaatree_128kbps'},{id:'nufais',n:'Ahmad Nufais',d:null}];
+const svg=p=>'<svg viewBox="0 0 24 24">'+p+'</svg>';
+const I={
+  spk:'<path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  play:'<path d="M8 5v14l11-7z" fill="currentColor"/>',
+  pause:'<path d="M9 5v14M15 5v14"/>',
+  prev:'<path d="M6 5v14"/><path d="M19 5v14L9 12z" fill="currentColor"/>',
+  next:'<path d="M18 5v14"/><path d="M5 5v14l10-7z" fill="currentColor"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',
+  set:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'
+};
+const cl=x=>Math.min(TA,Math.max(1,Math.round(+x)||1));
+let S={on:true,q:'ayyub',rep:1,rr:1,rng:false,rs:1,re:TA};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+S.rs=cl(S.rs);S.re=Math.max(S.rs,cl(S.re));if(![0,1,2,3].includes(S.rep))S.rep=1;if(![0,1,2,3].includes(S.rr))S.rr=1;S.on=true;if(!RC.some(r=>r.id===S.q&&r.d))S.q='ayyub';S.rng=!!S.rng;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const pad=n=>String(n).padStart(3,'0');
+const sa=g=>{const s=surahOf(g);return[s,g-cum[s-1]]};
+const gk=(s,a)=>cum[s-1]+a;
+const cq=()=>RC.find(r=>r.id===S.q)||RC[0];
+const url=g=>{const[s,a]=sa(g);return 'https://everyayah.com/data/'+cq().d+'/'+pad(s)+pad(a)+'.mp3'};
+
+$('aprev').innerHTML=svg(I.prev);$('anext').innerHTML=svg(I.next);$('astop').innerHTML=svg(I.stop);$('aopt').innerHTML=svg(I.set);
+
+// ---------- pemutar ----------
+const A=new Audio(),warm=new Audio();A.preload='auto';warm.preload='auto';
+let g=0,rep=0,lap=0,act=false,tt; // rep = ulangan ayat, lap = putaran seluruh rentang
+const endG=()=>S.rng?S.re:TA,begG=()=>S.rng?S.rs:1;
+const inR=()=>!S.rng||(g>=S.rs&&g<=S.re); // ayat yang sedang aktif masih di dalam rentang?
+const recording=()=>$('rfab').classList.contains('rec');
+function toast(m){const e=$('at');e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{e.hidden=true},3000)}
+function paintPlay(){const pl=act&&!A.paused&&inR();$('aplay').innerHTML=svg(pl?I.pause:I.play);$('aplay').setAttribute('aria-label',pl?'Jeda':'Putar murattal')}
+function label(){
+  const l=$('alb');document.body.classList.toggle('pl',act);$('aq').textContent=cq().n+(act&&S.rng&&S.rr!==1?' \u00b7 Putaran '+(lap+1)+(S.rr?'/'+S.rr:' \u221e'):'');if(!act){l.textContent='Murattal';return}
+  const[s,a]=sa(g);
+  l.textContent=SN[s-1]+' '+a+(S.rep===0?' \u221e':S.rep>1?' ('+Math.min(rep+1,S.rep)+'/'+S.rep+')':'');
+}
+function mark(){
+  document.querySelectorAll('.ao i.on').forEach(n=>n.classList.remove('on'));
+  if(act&&g){const[s,a]=sa(g);document.querySelectorAll('.ao i[data-k="'+s+':'+a+'"]').forEach(n=>n.classList.add('on'))}
+}
+function follow(){const[s,a]=sa(g),p=pageOfAyah(s,a);if(start(p)!==cur)goto(p,true)}
+function meta(){
+  if(!('mediaSession' in navigator))return;
+  const[s,a]=sa(g);
+  try{navigator.mediaSession.metadata=new MediaMetadata({title:SN[s-1]+' : '+a,artist:cq().n,album:'Murattal'})}catch(e){}
+}
+const AC='mushaf-audio-v1',ok=!!window.caches&&location.protocol.startsWith('http'),have=new Set();let tok=0,ou=null;
+if(ok)caches.open(AC).then(c=>c.keys()).then(ks=>ks.forEach(r=>have.add(r.url))).catch(()=>{});
+const keep=u=>{if(!ok||have.has(u))return;fetch(u,{mode:'cors'}).then(r=>{if(!r.ok)throw 0;return caches.open(AC).then(c=>c.put(u,r))}).then(()=>have.add(u)).catch(()=>{})};
+const pl=()=>A.play().catch(e=>{if(e&&e.name!=='AbortError'){toast('Audio tidak bisa diputar');paintPlay()}});
+// ayat yang sudah pernah diputar diambil dari cache (bisa offline); yang belum, diputar dari internet lalu disimpan
+function setSrc(u){
+  const my=++tok;if(ou){URL.revokeObjectURL(ou);ou=null}
+  if(have.has(u)){caches.open(AC).then(c=>c.match(u)).then(r=>r?r.blob():null).catch(()=>null).then(b=>{if(my!==tok)return;if(b){ou=URL.createObjectURL(b);A.src=ou}else A.src=u;pl()});return}
+  A.src=u;pl();keep(u);
+}
+function warmNext(){if(g<endG()){const u=url(g+1);warm.src=u;keep(u)}}
+function load(n){
+  g=n;rep=0;act=true;A.loop=S.rep===0;setSrc(url(g));
+  mark();follow();label();meta();paintPlay();warmNext();
+}
+function halt(){
+  if(!act)return;
+  act=false;g=0;lap=0;A.pause();A.removeAttribute('src');A.load();
+  mark();label();paintPlay();
+}
+window.audHalt=halt;
+A.onplay=A.onpause=paintPlay;
+A.onerror=()=>{if(act){toast('Audio tidak dapat dimuat. Periksa koneksi internet.');paintPlay()}};
+A.onended=()=>{
+  rep++;
+  if(S.rep===0||rep<S.rep){label();A.currentTime=0;A.play().catch(()=>{});return}
+  if(g>=endG()){
+    if(S.rng&&g===S.re&&(S.rr===0||lap+1<S.rr)){lap++;load(S.rs);return} // ulangi seluruh rentang
+    halt();return;
+  }
+  load(g+1);
+};
+function firstHere(){return C.ps[cur-1]||1}
+function tap(k){
+  const[s,a]=k.split(':').map(Number),n=gk(s,a);
+  if(recording()){toast('Hentikan rekaman dulu');return}
+  if(S.rng&&(n<S.rs||n>S.re)){S.rng=false;save();paintRange();toast('Rentang dimatikan')} // ayat yang dipilih sendiri selalu diputar
+  lap=0;load(n);
+}
+$('aplay').onclick=()=>{
+  if(recording()){toast('Hentikan rekaman dulu');return}
+  if(!act)load(S.rng?S.rs:firstHere());
+  else if(!inR()){lap=0;load(S.rs)} // rentang diubah: mulai dari awal rentang dan pindah ke halamannya
+  else A.paused?A.play().catch(()=>{}):A.pause();
+};
+$('aprev').onclick=()=>{if(act)load(Math.max(begG(),g-1))};
+$('anext').onclick=()=>{if(!act)return;g<endG()?load(g+1):halt()};
+$('astop').onclick=halt;
+if('mediaSession' in navigator){
+  const ms=(n,f)=>{try{navigator.mediaSession.setActionHandler(n,f)}catch(e){}};
+  ms('play',()=>{act&&A.play().catch(()=>{})});ms('pause',()=>{A.pause()});
+  ms('previoustrack',()=>$('aprev').click());ms('nexttrack',()=>$('anext').click());ms('stop',halt);
+}
+
+// ---------- kotak ayat di atas gambar ----------
+const pr={};
+const getBoxes=m=>pr[m]||(pr[m]=fetch('ayah-boxes-'+m+'.json').then(r=>r.ok?r.json():{}).catch(()=>({})));
+function place(h){
+  const o=h.__o;if(!o||!o.im.isConnected||!o.im.naturalWidth)return;
+  const hb=h.getBoundingClientRect(),ib=o.im.getBoundingClientRect(),nw=o.im.naturalWidth,nh=o.im.naturalHeight;
+  const sc=Math.min(ib.width/nw,ib.height/nh),cw=nw*sc,ch=nh*sc,st=o.ov.style;
+  st.left=(ib.left-hb.left+(ib.width-cw)/2)+'px';st.top=(ib.top-hb.top+(ib.height-ch)/2)+'px';
+  st.width=cw+'px';st.height=ch+'px';
+}
+const ro=window.ResizeObserver?new ResizeObserver(es=>es.forEach(e=>place(e.target))):null;
+window.audOv=async(h,im)=>{
+  const B=(await getBoxes(spread?'L':'P'))[String(h.dataset.p)];
+  if(!B||!im.isConnected)return;
+  const old=h.querySelector('.ao');if(old)old.remove();
+  const ov=document.createElement('div');ov.className='ao';
+  const now=act&&g?sa(g).join(':'):'';
+  for(const k in B)for(const r of B[k]){
+    const i=document.createElement('i');i.dataset.k=k;
+    i.style.cssText='left:'+r[0]+'%;top:'+r[1]+'%;width:'+r[2]+'%;height:'+r[3]+'%';
+    if(k===now)i.className='on';
+    ov.appendChild(i);
+  }
+  h.appendChild(ov);h.__o={ov,im};place(h);ro&&ro.observe(h);
+};
+// ---------- tekan lama ayat: putar, tandai, bagikan ----------
+const trk=$('track'),ash=$('ash');
+let lpT=0,lpX=0,lpY=0,lpFired=false,lk=null;
+const clearLp=()=>{clearTimeout(lpT);lpT=0};
+function paintAct(){const on=bm().includes(cur);$('abm').querySelector('span').textContent=on?'Hapus':'Tandai';$('abm').classList.toggle('on',on)}
+function openAct(k){
+  lk=k;paintAct();ash.hidden=false;
+  let r=null;document.querySelectorAll('.ao i[data-k="'+k+'"]').forEach(n=>{n.classList.add('sel');const b=n.getBoundingClientRect();if(!r||b.top<r.top)r=b});
+  const p=$('apop');if(!r)return;
+  const pw=p.offsetWidth,ph=p.offsetHeight,cx=r.left+r.width/2,x=Math.max(8,Math.min(innerWidth-pw-8,cx-pw/2));
+  let y=r.top-ph-12,dn=false;if(y<8){y=r.bottom+12;dn=true}
+  p.style.left=x+'px';p.style.top=y+'px';p.classList.toggle('dn',dn);p.style.setProperty('--ax',Math.max(16,Math.min(pw-16,cx-x))+'px');
+}
+new MutationObserver(()=>{if(ash.hidden)document.querySelectorAll('.ao i.sel').forEach(n=>n.classList.remove('sel'))}).observe(ash,{attributes:true,attributeFilter:['hidden']});
+trk.addEventListener('pointerdown',e=>{
+  lpFired=false;clearLp();
+  const i=e.target.closest&&e.target.closest('.ao i');if(!i||e.button>0)return;
+  lpX=e.clientX;lpY=e.clientY;
+  lpT=setTimeout(()=>{lpT=0;lpFired=true;try{navigator.vibrate&&navigator.vibrate(12)}catch(x){}openAct(i.dataset.k)},450);
+});
+trk.addEventListener('pointermove',e=>{if(lpT&&Math.hypot(e.clientX-lpX,e.clientY-lpY)>10)clearLp()});
+['pointerup','pointercancel','pointerleave'].forEach(n=>trk.addEventListener(n,clearLp));
+trk.addEventListener('scroll',clearLp,{passive:true});
+// fase capture: tekan lama tidak memicu ketukan; ketukan pada ayat (mode murattal) memutar audio dan tidak memunculkan/menyembunyikan bilah
+trk.addEventListener('click',e=>{
+  if(lpFired){lpFired=false;e.stopPropagation();e.preventDefault();return}
+},true);
+ash.addEventListener('click',e=>{if(e.target===ash)ash.hidden=true});
+$('aph').onclick=()=>{ash.hidden=true;tap(lk)};
+$('abm').onclick=()=>{$('bmbtn').click();ash.hidden=true};
+$('acopy').onclick=async()=>{
+  ash.hidden=true;const[s1,a1]=lk.split(':').map(Number);
+  try{await navigator.clipboard.writeText('QS '+SN[s1-1]+' : '+a1+'\n'+location.origin+location.pathname+'?s='+s1+'&a='+a1);toast('Disalin')}catch(x){toast('Tidak bisa menyalin')}
+};
+$('ashare').onclick=async()=>{
+  ash.hidden=true;const[s1,a1]=lk.split(':').map(Number);
+  const u=location.origin+location.pathname+'?s='+s1+'&a='+a1,tx='QS '+SN[s1-1]+' : '+a1;
+  try{if(navigator.share){await navigator.share({title:tx,text:tx,url:u});return}}catch(x){if(x&&x.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(tx+'\n'+u);toast('Tautan disalin')}catch(x){toast('Tidak bisa membagikan')}
+};
+
+// ---------- pengaturan ----------
+const rsS=$('rs_s'),rsA=$('rs_a'),reS=$('re_s'),reA=$('re_a');
+SN.forEach((n,i)=>{rsS.add(new Option((i+1)+'. '+n,i+1));reS.add(new Option((i+1)+'. '+n,i+1))});
+function fillA(sel,s){const n=C.ay[s-1];if(sel.options.length!==n){sel.replaceChildren();for(let a=1;a<=n;a++)sel.add(new Option(a,a))}}
+function paintRange(){
+  const[s1,a1]=sa(S.rs),[s2,a2]=sa(S.re);
+  rsS.value=s1;fillA(rsA,s1);rsA.value=a1;reS.value=s2;fillA(reA,s2);reA.value=a2;
+  $('arng').checked=S.rng;$('arb').hidden=!S.rng;
+}
+function paintRep(){document.querySelectorAll('#arep button').forEach(b=>b.classList.toggle('on',+b.dataset.r===S.rep));document.querySelectorAll('#arr button').forEach(b=>b.classList.toggle('on',+b.dataset.r===S.rr))}
+function setRange(edit,g0){
+  if(edit==='s'){S.rs=g0;if(S.re<S.rs)S.re=S.rs}else{S.re=g0;if(S.rs>S.re)S.rs=S.re}
+  save();paintRange();paintPlay();
+}
+rsS.onchange=()=>setRange('s',gk(+rsS.value,1));
+rsA.onchange=()=>setRange('s',gk(+rsS.value,+rsA.value));
+reS.onchange=()=>setRange('e',gk(+reS.value,1));
+reA.onchange=()=>setRange('e',gk(+reS.value,+reA.value));
+$('arng').onchange=e=>{S.rng=e.target.checked;save();paintRange();paintPlay()};
+$('apg').onclick=()=>{
+  const nxt=(spread&&cur<T)?cur+1:cur;
+  S.rs=C.ps[cur-1]||1;S.re=Math.max(S.rs,(nxt<T?C.ps[nxt]:TA+1)-1);S.rng=true;save();paintRange();paintPlay();
+};
+document.querySelectorAll('#arep button').forEach(b=>b.onclick=()=>{
+  S.rep=+b.dataset.r;if(act){A.loop=S.rep===0;label()}save();paintRep();
+});
+document.querySelectorAll('#arr button').forEach(b=>b.onclick=()=>{S.rr=+b.dataset.r;save();paintRep();label()});
+$('aopt').onclick=()=>{const a=$('aset');a.hidden=!a.hidden;$('aopt').classList.toggle('on',!a.hidden)};
+
+// ---------- qori: daftar pilihan + simpan offline per juz ----------
+const qb=$('qbtn'),qs=$('qs'),ql=$('ql');let off=false;
+qb.innerHTML=svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')+'<span></span>';
+function paintQ(){
+  qb.querySelector('span').textContent='Qori: '+cq().n;
+  ql.replaceChildren(...RC.map(r=>{const b=document.createElement('button');b.className='row'+(r.id===S.q?' on':'');b.disabled=!r.d;
+    b.textContent=r.n+(r.d?(r.id===S.q?'  \u2713':''):' (belum tersedia)');
+    b.onclick=()=>{S.q=r.id;save();paintQ();label();$('qst').textContent='';if(act)load(g)};return b}));
+}
+qb.onclick=()=>{paintQ();qs.hidden=false};
+qs.addEventListener('click',e=>{if(e.target===qs)qs.hidden=true});
+$('qoff').onclick=async()=>{
+  const st=$('qst');if(off)return;
+  if(!ok){st.textContent='Perlu dibuka lewat alamat web (https)';return}
+  const j=juzOf(cur),g0=C.ps[C.juzStart[j-1]-1]||1,g1=j<30?C.ps[C.juzStart[j]-1]-1:TA,tot=g1-g0+1,list=[];
+  for(let x=g0;x<=g1;x++){const u=url(x);if(!have.has(u))list.push(u)}
+  off=true;let i=0,n=0,f=0;const up=()=>{st.textContent='Juz '+j+': '+(tot-list.length+n)+' / '+tot+' ayat tersimpan'+(f?' \u00b7 '+f+' gagal':'')};up();
+  const w=async()=>{while(i<list.length){const u=list[i++];try{const r=await fetch(u,{mode:'cors'});if(!r.ok)throw 0;await(await caches.open(AC)).put(u,r);have.add(u);n++}catch(e){f++}up()}};
+  await Promise.all([w(),w(),w()]);off=false;
+};
+// pemutar mengambang naik di atas bilah bawah saat bilah muncul
+if(window.ResizeObserver){new ResizeObserver(()=>document.documentElement.style.setProperty('--bh',$('bot').offsetHeight+'px')).observe($('bot'))}
+paintQ();paintRange();paintRep();paintPlay();label();
+})();
+</script></body></html>
