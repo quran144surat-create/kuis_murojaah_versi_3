@@ -105,9 +105,13 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .juz-chip.full{background:var(--ok-soft)}
 .juz-chip.part{border-color:var(--warn)}
 .juz-chip.sel{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
-.juz-chip{position:relative}
-.juz-chip.full::after{content:'\2713';position:absolute;top:2px;right:9px;font-size:11px;line-height:1;font-weight:700;color:var(--em);pointer-events:none}
-.juz-chip.full.sel::after{color:var(--on-primary)}
+.juz-chip{position:relative;overflow:hidden;transition:background .2s,border-color .2s,color .2s,transform .12s}
+.juz-chip:active{transform:scale(.96)}
+.juz-chip::before{content:'';position:absolute;left:18%;right:18%;bottom:4px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--em) var(--p,0%),rgba(128,128,128,.22) var(--p,0%));opacity:0;transition:opacity .2s}
+.juz-chip.part::before{opacity:.9}
+.juz-chip.full{border-color:rgba(46,160,120,.35);border-color:color-mix(in srgb,var(--em) 38%,transparent)}
+.juz-chip.full::after{content:'\2713';position:absolute;top:3px;right:6px;width:14px;height:14px;border-radius:50%;background:var(--em);color:var(--on-primary);font:700 9px/14px var(--sans);text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
+.juz-chip.full.sel::after{background:var(--on-primary);color:var(--primary)}
 .juz-tools{display:flex;align-items:center;gap:2px;margin-top:8px;font-size:11px;color:var(--muted)}
 .juz-mini{appearance:none;border:none;background:none;color:var(--primary);font:600 12px var(--sans);padding:4px 6px 4px 0;margin-right:6px;cursor:pointer}
 .juz-legend{margin-left:auto}
@@ -1241,6 +1245,7 @@ function makeQoriManager(cfg){
       c.classList.toggle('sel',sel.has(j));
       c.classList.toggle('full',n===t);
       c.classList.toggle('part',n>0&&n<t);
+      c.style.setProperty('--p',(t?Math.round(n/t*100):0)+'%');
       c.setAttribute('aria-pressed',sel.has(j)?'true':'false');
       c.title='Juz '+j+' · '+n+'/'+t+' ayat tersimpan';
     });
@@ -1299,27 +1304,46 @@ function makeQoriManager(cfg){
     statusEl.classList.add('partial');
     const db=await openDB();
     let info=(await idbGet(db,cfg.infoKey))||{count:0,bytes:0};
-    let done=0;
-    for(const g of ayat){
-      if(cancel)break;
-      done++;
+    let done=0,fail=0,streak=0,i=0,unsaved=0;
+    // satu kali baca semua kunci yang sudah ada (bukan per ayat)
+    let have=null;
+    try{
+      const ks=await new Promise((res,rej)=>{const q=db.transaction('kv','readonly').objectStore('kv').getAllKeys();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});
+      have=new Set(ks);
+    }catch(e){have=null;}
+    const show=()=>{
       fill.style.width=(done/ayat.length*100)+'%';
-      statusEl.textContent=`Mengunduh ${done}/${ayat.length}…`;
-      const key=cfg.keyPrefix+g;
-      try{
-        const existing=await idbGet(db,key);
-        if(existing)continue;
-        const res=await fetch(cfg.audioUrl(g));
-        if(!res.ok)continue;
-        const blob=await res.blob();
-        await idbSet(db,key,blob);
-        info.count++;info.bytes+=blob.size;
-        await idbSet(db,cfg.infoKey,info);
-      }catch(e){/* offline / gagal untuk ayat ini: lewati, lanjut ke ayat berikutnya */}
-    }
+      statusEl.textContent=`Mengunduh ${done}/${ayat.length}…`+(fail?` · ${fail} gagal`:'');
+    };
+    const saveInfo=async()=>{unsaved=0;try{await idbSet(db,cfg.infoKey,{count:info.count,bytes:info.bytes});}catch(e){}};
+    const worker=async()=>{
+      while(!cancel&&streak<8&&i<ayat.length){
+        const g=ayat[i++];
+        const key=cfg.keyPrefix+g;
+        try{
+          const exists=have?have.has(key):!!(await idbGet(db,key));
+          if(!exists){
+            const res=await fetch(cfg.audioUrl(g));
+            if(!res.ok)throw new Error('http '+res.status);
+            const blob=await res.blob();
+            if(!blob.size)throw new Error('kosong');
+            await idbSet(db,key,blob);
+            if(have)have.add(key);
+            info.count++;info.bytes+=blob.size;
+            if(++unsaved>=10)await saveInfo();
+          }
+          streak=0;
+        }catch(e){fail++;streak++;}
+        done++;show();
+      }
+    };
+    show();
+    await Promise.all([worker(),worker(),worker(),worker()]);
+    await saveInfo();
     running=false;
     bar.classList.add('hidden');
     refresh();
+    if(fail&&!cancel)setTimeout(()=>{statusEl.textContent+=streak>=8?' · berhenti: gagal berulang (cek koneksi/penyimpanan)':` · ${fail} ayat gagal, coba unduh lagi`;},0);
   }
   async function del(){
     const db=await openDB();
