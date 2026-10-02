@@ -105,6 +105,9 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .juz-chip.full{background:var(--ok-soft)}
 .juz-chip.part{border-color:var(--warn)}
 .juz-chip.sel{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.juz-chip{position:relative}
+.juz-chip.full::after{content:'\2713';position:absolute;top:2px;right:9px;font-size:11px;line-height:1;font-weight:700;color:var(--em);pointer-events:none}
+.juz-chip.full.sel::after{color:var(--on-primary)}
 .juz-tools{display:flex;align-items:center;gap:2px;margin-top:8px;font-size:11px;color:var(--muted)}
 .juz-mini{appearance:none;border:none;background:none;color:var(--primary);font:600 12px var(--sans);padding:4px 6px 4px 0;margin-right:6px;cursor:pointer}
 .juz-legend{margin-left:auto}
