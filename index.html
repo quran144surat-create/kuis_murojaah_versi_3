@@ -584,10 +584,10 @@ const view=name=>{
 /* ================= Daftar qori & qori aktif ================= */
 const QORI_LIST={
   ayyoub:{id:'ayyoub',name:'Muhammad Ayyoub',infoKey:'qori-audio-info',keyPrefix:'audio:',
-    audioUrl:g=>'https://cdn.islamic.network/quran/audio/128/ar.muhammadayyoub/'+g+'.mp3',
+    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Muhammad_Ayyoub_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
     statusId:'qoriDlStatus',btnId:'btnDownloadQori',delBtnId:'btnDeleteQori',barId:'qoriDlBar',fillId:'qoriDlBarFill',activeBtnId:'qoriActiveBtn1',cardId:'qoriCard1'},
   husary:{id:'husary',name:'Syeikh Mahmoud Khalil Al-Husary',infoKey:'qori-audio-info-husary',keyPrefix:'audio-husary:',
-    audioUrl:g=>'https://cdn.islamic.network/quran/audio/128/ar.husary/'+g+'.mp3',
+    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Husary_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
     statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'}
 };
 const ACTIVE_QORI_KEY='hf-muraja-ah-active-qori';
