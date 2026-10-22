@@ -1694,8 +1694,8 @@ function initAudioFab(){
    Satu soal = satu ayat pertanyaan + beberapa ayat jawaban berurutan.
    Tiap ayat: dengar -> rekam (tanpa batas durasi) -> dengarkan bacaan sendiri -> koreksi Salah/Benar.
    Jumlah ayat jawaban per soal ditentukan otomatis dari panjang ayat (ubah dua konstanta ini bila perlu). */
-const LS_BUDGET=22;  // batas jumlah kata ayat jawaban per soal (ayat pertama selalu masuk)
-const LS_MAX=5;      // maksimal ayat jawaban per soal
+const LS_BUDGET=130; // target jumlah kata ayat jawaban per soal (±1 halaman mushaf; ayat pertama selalu masuk)
+const LS_MAX=15;     // maksimal ayat jawaban per soal
 const LS={stream:null,rec:null,chunks:[],t0:0,timer:null,lock:null,active:false,busy:false,locked:false,discard:false,
   state:'',soal:[],si:0,ai:0,url:null,player:null,okSoal:0,msg:''};
 const LS_I={
@@ -1737,7 +1737,7 @@ function lsBuildSoal(){
       const ans=[];let words=0,j=i+1;
       while(j<r.length&&ans.length<LS_MAX){
         const w=lsWords(r[j]);
-        if(ans.length&&words+w>LS_BUDGET)break;
+        if(ans.length&&Math.abs(words+w-LS_BUDGET)>=Math.abs(words-LS_BUDGET))break; // tambah ayat hanya bila membuat total lebih dekat ke target
         ans.push(r[j]);words+=w;j++;
       }
       soal.push({q:r[i],ans});
