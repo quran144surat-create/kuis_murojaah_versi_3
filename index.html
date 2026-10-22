@@ -819,7 +819,7 @@ function poolBase(){
   return ACTIVE_SET;
 }
 /* Cakupan ujian: tab Surah / Juz / Kustom (rentang surah, juz, atau halaman). */
-const SCOPE={tab:'surah',kustom:null,surah:1,juz:1,sFrom:1,sTo:1,jFrom:1,jTo:1,pFrom:1,pTo:20};
+const SCOPE={tab:'surah',kustom:null,surah:1,juz:1,sFrom:1,sTo:1,sAFrom:null,sATo:null,jFrom:1,jTo:1,pFrom:1,pTo:20};
 function scopeSpan(){
   // Kembalikan rentang ayat global {g1,g2} yang berurutan, atau null (= semua hafalan).
   // Juz -> halaman memakai tabel eksak JUZ_PAGE_START (Juz 30 = 23 halaman).
@@ -827,7 +827,14 @@ function scopeSpan(){
   const juzPg=(a,b)=>{a=Math.min(Math.max(+a||1,1),30);b=Math.min(Math.max(+b||1,1),30);if(b<a){const x=a;a=b;b=x;}return pg(JUZ_PAGE_START[a-1],b<30?JUZ_PAGE_START[b]-1:604);};
   if(SCOPE.tab==='surah'){const sv=+SCOPE.surah||1;return {g1:GSTART[sv-1]+1,g2:GSTART[sv]};}
   if(SCOPE.tab==='juz')return juzPg(SCOPE.juz,SCOPE.juz);
-  if(SCOPE.kustom==='surah'){let a=+SCOPE.sFrom||1,b=+SCOPE.sTo||1;if(b<a){const x=a;a=b;b=x;}return {g1:GSTART[a-1]+1,g2:GSTART[b]};}
+  if(SCOPE.kustom==='surah'){
+    // dari surat+ayat sampai surat+ayat (ayat kosong = ayat pertama / ayat terakhir surat itu)
+    const sa=Math.min(Math.max(+SCOPE.sFrom||1,1),114),sb=Math.min(Math.max(+SCOPE.sTo||1,1),114);
+    const aa=Math.min(Math.max(+SCOPE.sAFrom||1,1),AY[sa-1]),ab=Math.min(Math.max(+SCOPE.sATo||AY[sb-1],1),AY[sb-1]);
+    let g1=gAyah(sa,aa),g2=gAyah(sb,ab);
+    if(g2<g1){const x=g1;g1=g2;g2=x;}
+    return {g1,g2};
+  }
   if(SCOPE.kustom==='juz')return juzPg(SCOPE.jFrom,SCOPE.jTo);
   if(SCOPE.kustom==='page'){
     let p1=+SCOPE.pFrom,p2=+SCOPE.pTo;
@@ -945,7 +952,9 @@ function applyUjianUI(){
   $('ujianHint').textContent=l?'Soal diacak dari cakupan, jumlahnya sesuai pilihan. Tiap soal berisi beberapa ayat (menurut panjang ayat) yang dijawab dengan rekaman, lalu Anda dengarkan dan koreksi sendiri.':'Jawab soal dengan memilih jawaban.';
   const jc=$('jmlCard');if(jc)jc.style.display='';
 }
+let SCOPE_RENDERING=false; // true saat panel digambar ulang: abaikan event change yang terpicu blur elemen lama
 function renderScopePanel(){
+  SCOPE_RENDERING=true;
   const box=$('scopePanel');
   document.querySelectorAll('.scope-tab').forEach(b=>{const on=b.dataset.tab===SCOPE.tab;b.classList.toggle('active',on);b.setAttribute('aria-selected',on?'true':'false');});
   const surahOpts=sel=>{let o='';SN.forEach((n,i)=>o+=`<option value="${i+1}"${i+1===+sel?' selected':''}>${i+1}. ${n}</option>`);return o;};
@@ -963,14 +972,28 @@ function renderScopePanel(){
   }else{
     box.style.padding='2px 18px';
     const defs=[
-      ['surah','Ujian Rentang Surah',`<div style="display:grid;gap:10px"><div><div class="status" style="${cap}">Dari surah</div><select id="kSFrom">${surahOpts(SCOPE.sFrom)}</select></div><div><div class="status" style="${cap}">Sampai surah</div><select id="kSTo">${surahOpts(SCOPE.sTo)}</select></div></div>`],
+      ['surah','Ujian Rentang Surah',`<div style="display:grid;gap:12px"><div><div class="status" style="${cap}">Dari surah dan ayat</div><div style="display:grid;grid-template-columns:1fr 84px;gap:10px"><select id="kSFrom">${surahOpts(SCOPE.sFrom)}</select><input type="number" id="kSAFrom" min="1" max="${AY[(+SCOPE.sFrom||1)-1]}" value="${SCOPE.sAFrom||1}" inputmode="numeric" aria-label="Ayat awal"></div></div><div><div class="status" style="${cap}">Sampai surah dan ayat</div><div style="display:grid;grid-template-columns:1fr 84px;gap:10px"><select id="kSTo">${surahOpts(SCOPE.sTo)}</select><input type="number" id="kSATo" min="1" max="${AY[(+SCOPE.sTo||1)-1]}" value="${SCOPE.sATo||AY[(+SCOPE.sTo||1)-1]}" inputmode="numeric" aria-label="Ayat akhir"></div></div></div>`],
       ['juz','Ujian Rentang Juz',`<div class="grid2"><div><div class="status" style="${cap}">Dari juz</div><select id="kJFrom">${juzOpts(SCOPE.jFrom)}</select></div><div><div class="status" style="${cap}">Sampai juz</div><select id="kJTo">${juzOpts(SCOPE.jTo)}</select></div></div>`],
       ['page','Ujian Rentang Halaman',`<div class="grid2"><div><div class="status" style="${cap}">Dari halaman</div><input type="number" id="kPFrom" min="1" max="604" value="${SCOPE.pFrom}" inputmode="numeric"></div><div><div class="status" style="${cap}">Sampai halaman</div><input type="number" id="kPTo" min="1" max="604" value="${SCOPE.pTo}" inputmode="numeric"></div></div>`]
     ];
     box.innerHTML=defs.map(([k,t,body])=>{const on=SCOPE.kustom===k;return `<div class="kr"><div class="kr-head"><span>${t}</span><button type="button" class="sw" role="switch" aria-checked="${on}" aria-label="${t}" data-k="${k}"></button></div>${on?`<div class="kr-body">${body}</div>`:''}</div>`;}).join('')+'<p class="status" id="kustomHint" style="margin:0 0 14px"></p>';
     box.querySelectorAll('.sw').forEach(b=>{b.onclick=()=>{SCOPE.kustom=SCOPE.kustom===b.dataset.k?null:b.dataset.k;renderScopePanel();};});
-    bind('kSFrom','sFrom');bind('kSTo','sTo');bind('kJFrom','jFrom');bind('kJTo','jTo');bind('kPFrom','pFrom');bind('kPTo','pTo');
+    {const sf=$('kSFrom'),st=$('kSTo');
+      if(sf)sf.onchange=()=>{SCOPE.sFrom=sf.value;SCOPE.sAFrom=null;renderScopePanel();}; // ganti surat: ayat kembali ke ayat 1
+      if(st)st.onchange=()=>{SCOPE.sTo=st.value;SCOPE.sATo=null;renderScopePanel();};   // ganti surat: ayat kembali ke ayat terakhir
+      [['kSAFrom','sAFrom','sFrom'],['kSATo','sATo','sTo']].forEach(([id,key,sk])=>{
+        bind(id,key);
+        const el=$(id);if(!el)return;
+        el.onchange=()=>{ // rapikan angka di luar rentang ayat surat itu
+          if(SCOPE_RENDERING||!el.isConnected)return; // panel sedang/sudah digambar ulang (mis. surat diganti): abaikan nilai lama
+          const mx=AY[(+SCOPE[sk]||1)-1];let v=parseInt(el.value,10);
+          if(!(v>=1))v=key==='sAFrom'?1:mx;
+          v=Math.min(Math.max(v,1),mx);el.value=v;SCOPE[key]=v;refreshPoolStatus();
+        };
+      });}
+    bind('kJFrom','jFrom');bind('kJTo','jTo');bind('kPFrom','pFrom');bind('kPTo','pTo');
   }
+  SCOPE_RENDERING=false;
   refreshPoolStatus();
 }
 function startUjian(){
@@ -1713,17 +1736,17 @@ function lsMime(){
 function lsEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function lsWords(g){return (QTEXT[g-1]||'').split(/\s+/).filter(Boolean).length;}
 // Pilih soal: ayat pertanyaan bebas (ayat mana pun dalam cakupan yang masih punya ayat sesudahnya di surat yang sama),
-// ayat jawaban = ayat-ayat sesudahnya sampai kira-kira LS_BUDGET kata (maks LS_MAX ayat), tidak melewati batas surat.
+// ayat jawaban = ayat-ayat sesudahnya sampai kira-kira LS_BUDGET kata (maks LS_MAX ayat); boleh berlanjut ke surat berikutnya selama masih dalam cakupan.
 // Tidak ada ayat jawaban yang dipakai dua kali dalam satu ujian; ayat pertanyaan boleh berupa ayat yang jadi jawaban di soal lain.
 function lsBuildSoal(n){
   const pool=buildPool();
   const inPool=new Set(pool);
-  const cues=pool.filter(g=>{const {s,a}=ayahFromG(g);return a<AY[s-1]&&inPool.has(g+1);});
+  const cues=pool.filter(g=>inPool.has(g+1));
   for(let i=cues.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cues[i],cues[j]]=[cues[j],cues[i]];}
   const used=new Set(),soal=[];
   function run(q){
-    const s=ayahFromG(q).s,ans=[];let words=0,blocked=false,j=q+1;
-    while(j<=AYTOT&&ayahFromG(j).s===s&&inPool.has(j)&&ans.length<LS_MAX){
+    const ans=[];let words=0,blocked=false,j=q+1;
+    while(j<=AYTOT&&inPool.has(j)&&ans.length<LS_MAX){
       if(used.has(j)){blocked=true;break;}
       const w=lsWords(j);
       if(ans.length&&Math.abs(words+w-LS_BUDGET)>=Math.abs(words-LS_BUDGET))break; // tambah ayat hanya bila total makin dekat ke target
@@ -1744,6 +1767,12 @@ function lsBuildSoal(n){
     }
   }
   return soal;
+}
+// Awal surat (ayat 1, kecuali Al-Fatihah yang basmalahnya sudah ayat 1 dan At-Taubah yang tanpa basmalah): tampilkan basmalah di atas ayat.
+function lsBasmalah(g){
+  const x=ayahFromG(g);
+  if(x.a!==1||x.s===1||x.s===9)return '';
+  return '<div class="arab" style="font-size:20px;line-height:1.9;text-align:center;color:var(--muted);border-bottom:1px dashed var(--line2);margin-bottom:4px">'+lsEsc(QTEXT[0]||'')+'</div>';
 }
 function lsMicErr(e){
   const n=e&&e.name;
@@ -1830,7 +1859,7 @@ function lsRender(){
     const cue=lsCue(),ans=lsAns();
     card.innerHTML=lsHead()
       +'<div class="ls-qbox"><div class="arab">'+lsEsc(QTEXT[cue-1]||'')+'</div></div>'
-      +'<div class="ls-abox"><div class="arab">'+lsEsc(QTEXT[ans-1]||'')+'</div></div>'
+      +'<div class="ls-abox">'+lsBasmalah(ans)+'<div class="arab">'+lsEsc(QTEXT[ans-1]||'')+'</div></div>'
       +(LS.url?'<button type="button" class="ls-pill" id="lsMine">▶ Putar bacaan Anda</button>':'<p class="status">(tidak ada rekaman)</p>')
       +'<div class="ls-lbl" style="margin:4px 0 0;color:var(--ink);font-size:16px">Apakah bacaan Anda benar?</div>'
       +'<div class="ls-judge"><button type="button" class="ls-no" id="lsNo">✕ Salah</button><button type="button" class="ls-yes" id="lsYes">✓ Benar</button></div>';
