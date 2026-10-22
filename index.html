@@ -1712,38 +1712,37 @@ function lsMime(){
 }
 function lsEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function lsWords(g){return (QTEXT[g-1]||'').split(/\s+/).filter(Boolean).length;}
-function lsBuildSoal(){
+// Pilih soal: ayat pertanyaan bebas (ayat mana pun dalam cakupan yang masih punya ayat sesudahnya di surat yang sama),
+// ayat jawaban = ayat-ayat sesudahnya sampai kira-kira LS_BUDGET kata (maks LS_MAX ayat), tidak melewati batas surat.
+// Tidak ada ayat jawaban yang dipakai dua kali dalam satu ujian; ayat pertanyaan boleh berupa ayat yang jadi jawaban di soal lain.
+function lsBuildSoal(n){
   const pool=buildPool();
-  const sp=scopeSpan();
-  const runs=[];let run=[];
-  pool.forEach(g=>{
-    if(run.length){
-      const prev=run[run.length-1];
-      if(g===prev+1&&ayahFromG(prev).s===ayahFromG(g).s){run.push(g);return;}
-      runs.push(run);run=[];
+  const inPool=new Set(pool);
+  const cues=pool.filter(g=>{const {s,a}=ayahFromG(g);return a<AY[s-1]&&inPool.has(g+1);});
+  for(let i=cues.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cues[i],cues[j]]=[cues[j],cues[i]];}
+  const used=new Set(),soal=[];
+  function run(q){
+    const s=ayahFromG(q).s,ans=[];let words=0,blocked=false,j=q+1;
+    while(j<=AYTOT&&ayahFromG(j).s===s&&inPool.has(j)&&ans.length<LS_MAX){
+      if(used.has(j)){blocked=true;break;}
+      const w=lsWords(j);
+      if(ans.length&&Math.abs(words+w-LS_BUDGET)>=Math.abs(words-LS_BUDGET))break; // tambah ayat hanya bila total makin dekat ke target
+      ans.push(j);words+=w;j++;
     }
-    run.push(g);
-  });
-  if(run.length)runs.push(run);
-  const soal=[];
-  runs.forEach(r=>{
-    if(r.length===1){ // ayat tunggal: tanyakan ayat sesudahnya bila masih di surat yang sama
-      const {s,a}=ayahFromG(r[0]);
-      if(a<AY[s-1]&&(!sp||r[0]+1<=sp.g2))soal.push({q:r[0],ans:[r[0]+1]});
-      return;
+    return {ans,words,blocked};
+  }
+  // putaran 1: hanya soal utuh (tidak terpotong ayat yang sudah dipakai); putaran 2: isi sisanya dengan soal yang lebih pendek
+  for(let pass=0;pass<2&&soal.length<n;pass++){
+    for(const q of cues){
+      if(soal.length>=n)break;
+      if(soal.some(x=>x.q===q))continue;
+      const r=run(q);
+      if(!r.ans.length)continue;
+      if(pass===0&&r.blocked&&r.words<LS_BUDGET*0.5)continue;
+      r.ans.forEach(g=>used.add(g));
+      soal.push({q,ans:r.ans});
     }
-    let i=0;
-    while(i<r.length-1){
-      const ans=[];let words=0,j=i+1;
-      while(j<r.length&&ans.length<LS_MAX){
-        const w=lsWords(r[j]);
-        if(ans.length&&Math.abs(words+w-LS_BUDGET)>=Math.abs(words-LS_BUDGET))break; // tambah ayat hanya bila membuat total lebih dekat ke target
-        ans.push(r[j]);words+=w;j++;
-      }
-      soal.push({q:r[i],ans});
-      i=j-1; // ayat terakhir yang dijawab menjadi ayat pertanyaan soal berikutnya
-    }
-  });
+  }
   return soal;
 }
 function lsMicErr(e){
@@ -1866,11 +1865,8 @@ function lsRender(){
 async function startLisan(){
   if(LS.busy||LS.active)return;
   $('ujianMsg').textContent='';
-  const all=lsBuildSoal();
-  // acak potongan soal (tanpa tumpang tindih), lalu ambil sebanyak jumlah soal yang dipilih
-  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]];}
   const n=+document.querySelector('input[name=jml]:checked').value;
-  const soal=all.slice(0,n);
+  const soal=lsBuildSoal(n); // ayat pertanyaan acak, tanpa ayat jawaban ganda; berhenti bila tak ada lagi yang bisa dibuat
   if(!soal.length){$('ujianMsg').textContent='Tidak ada ayat yang bisa dijadikan soal lisan pada cakupan ini. Pilih cakupan lain.';return;}
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){
     $('ujianMsg').textContent=window.isSecureContext===false?'Perekaman suara butuh koneksi aman. Buka aplikasi lewat alamat https://, bukan http:// atau file.':'Browser ini belum mendukung perekaman suara. Perbarui browser, atau buka lewat Chrome (Android) / Safari (iPhone).';return;
