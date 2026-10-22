@@ -58,9 +58,9 @@ h1,h2,h3{font-family:var(--serif);margin:0}
 .hero h1{font-size:22px}
 .hero p{margin:4px 0 0;opacity:.85;font-size:13.5px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
-#qoriCard1,#qoriCard2{cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .08s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
-#qoriCard1:active,#qoriCard2:active{transform:scale(.985)}
-#qoriCard1.qori-card-active,#qoriCard2.qori-card-active{border-color:var(--em);box-shadow:var(--shadow),0 0 0 1px var(--em) inset;cursor:default}
+#qoriCard1,#qoriCard2,#qoriCard3,#qoriCard4{cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .08s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+#qoriCard1:active,#qoriCard2:active,#qoriCard3:active,#qoriCard4:active{transform:scale(.985)}
+#qoriCard1.qori-card-active,#qoriCard2.qori-card-active,#qoriCard3.qori-card-active,#qoriCard4.qori-card-active{border-color:var(--em);box-shadow:var(--shadow),0 0 0 1px var(--em) inset;cursor:default}
 .tile{background:var(--tile);border-radius:14px;padding:12px 14px}
 .muted{color:var(--muted)}
 .btn{appearance:none;border:none;border-radius:12px;padding:12px 18px;font:600 14.5px var(--sans);cursor:pointer;background:var(--primary);color:var(--on-primary)}
@@ -190,6 +190,11 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .audio-fab.audio-fab-on{background:color-mix(in srgb,var(--em) 60%,transparent);opacity:1}
 .audio-fab:active{cursor:grabbing}
 .audio-fab.dragging{transition:none;box-shadow:0 4px 18px rgba(0,0,0,.28)}
+.qori-pop{position:fixed;z-index:40;width:min(250px,calc(100vw - 24px));padding:8px;border-radius:20px;background:var(--surface);border:1px solid var(--line2);box-shadow:var(--shadow),0 12px 32px rgba(0,0,0,.22)}
+.qori-pop-t{font:700 12px var(--sans);color:var(--muted);padding:2px 8px 6px}
+.qori-pop-list{display:flex;flex-direction:column;gap:4px;padding:4px;border-radius:14px;background:var(--surface2);border:1px solid var(--line)}
+.qori-pop-item{appearance:none;border:none;text-align:left;cursor:pointer;padding:10px 12px;border-radius:10px;background:transparent;color:var(--ink);font:600 13.5px var(--sans);touch-action:manipulation}
+.qori-pop-item.on{background:var(--em);color:var(--on-primary);font-weight:800}
 .audio-fab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;pointer-events:none}
 .mode-toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(6px);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font:600 12.5px var(--sans);z-index:27;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;box-shadow:var(--shadow);white-space:nowrap}
 .mode-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -527,6 +532,34 @@ body.audio-icons-hidden .sr-play{display:none}
         <button class="btn secondary hidden" id="btnDeleteQori2" type="button">Hapus audio tersimpan</button>
       </div>
     </div>
+    <div class="card" id="qoriCard3">
+      <div class="quiz-q-head" style="margin:0 0 10px">
+        <h3 style="font-size:15px;margin:0">Misyari Rasyid Al-Afasy</h3>
+        <button class="qori-active-pill" id="qoriActiveBtn3" type="button"></button>
+      </div>
+      <p class="qori-dl-pill" id="qoriDlStatus3"></p>
+      <div class="bar hidden" id="qoriDlBar3"><i id="qoriDlBarFill3" style="width:0%"></i></div>
+      <div class="btn-row">
+        <button class="btn" id="btnDownloadQori3" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
+        </button>
+        <button class="btn secondary hidden" id="btnDeleteQori3" type="button">Hapus audio tersimpan</button>
+      </div>
+    </div>
+    <div class="card" id="qoriCard4">
+      <div class="quiz-q-head" style="margin:0 0 10px">
+        <h3 style="font-size:15px;margin:0">Abu Bakr Ash-Shatri</h3>
+        <button class="qori-active-pill" id="qoriActiveBtn4" type="button"></button>
+      </div>
+      <p class="qori-dl-pill" id="qoriDlStatus4"></p>
+      <div class="bar hidden" id="qoriDlBar4"><i id="qoriDlBarFill4" style="width:0%"></i></div>
+      <div class="btn-row">
+        <button class="btn" id="btnDownloadQori4" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
+        </button>
+        <button class="btn secondary hidden" id="btnDeleteQori4" type="button">Hapus audio tersimpan</button>
+      </div>
+    </div>
   </div>
 
   <div id="view-lainnya" class="hidden">
@@ -724,7 +757,13 @@ const QORI_LIST={
     statusId:'qoriDlStatus',btnId:'btnDownloadQori',delBtnId:'btnDeleteQori',barId:'qoriDlBar',fillId:'qoriDlBarFill',activeBtnId:'qoriActiveBtn1',cardId:'qoriCard1'},
   husary:{id:'husary',name:'Syeikh Mahmoud Khalil Al-Husary',infoKey:'qori-audio-info-husary',keyPrefix:'audio-husary:',
     audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Husary_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
-    statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'}
+    statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'},
+  afasy:{id:'afasy',name:'Misyari Rasyid Al-Afasy',infoKey:'qori-audio-info-afasy',keyPrefix:'audio-afasy:',
+    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Alafasy_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
+    statusId:'qoriDlStatus3',btnId:'btnDownloadQori3',delBtnId:'btnDeleteQori3',barId:'qoriDlBar3',fillId:'qoriDlBarFill3',activeBtnId:'qoriActiveBtn3',cardId:'qoriCard3'},
+  shatri:{id:'shatri',name:'Abu Bakr Ash-Shatri',infoKey:'qori-audio-info-shatri',keyPrefix:'audio-shatri:',
+    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
+    statusId:'qoriDlStatus4',btnId:'btnDownloadQori4',delBtnId:'btnDeleteQori4',barId:'qoriDlBar4',fillId:'qoriDlBarFill4',activeBtnId:'qoriActiveBtn4',cardId:'qoriCard4'}
 };
 const ACTIVE_QORI_KEY='hf-muraja-ah-active-qori';
 function getActiveQoriId(){try{const v=localStorage.getItem(ACTIVE_QORI_KEY);return QORI_LIST[v]?v:'ayyoub';}catch(e){return 'ayyoub';}}
@@ -1422,7 +1461,7 @@ function updateAudioFabUI(){
   const fab=$('audioFab');if(!fab)return;
   fab.innerHTML=isOn?ICON_AUDIO_ON:ICON_AUDIO_OFF;
   fab.classList.toggle('audio-fab-on',isOn);
-  const label=isOn?'Audio ayat: Aktif (ketuk untuk nonaktifkan sementara, seret untuk pindah)':'Audio ayat: Nonaktif sementara (ketuk untuk tampilkan lagi, seret untuk pindah)';
+  const label=isOn?'Audio ayat: Aktif (ketuk untuk nonaktifkan sementara, tahan untuk ganti qori, seret untuk pindah)':'Audio ayat: Nonaktif sementara (ketuk untuk tampilkan lagi, seret untuk pindah)';
   fab.title=label;fab.setAttribute('aria-label',label);
 }
 function toggleAudioIconsVisible(){
@@ -1616,10 +1655,12 @@ function makeQoriManager(cfg){
 }
 const qoriAyyoub=makeQoriManager(QORI_LIST.ayyoub);
 const qoriHusary=makeQoriManager(QORI_LIST.husary);
-function refreshQoriStatus(){qoriAyyoub.refresh();qoriHusary.refresh();renderActiveQoriBadges();}
+const qoriAfasy=makeQoriManager(QORI_LIST.afasy);
+const qoriShatri=makeQoriManager(QORI_LIST.shatri);
+function refreshQoriStatus(){qoriAyyoub.refresh();qoriHusary.refresh();qoriAfasy.refresh();qoriShatri.refresh();renderActiveQoriBadges();}
 
 /* ================= Tombol mengambang: geser + magnet ke tepi kiri/kanan ================= */
-function makeDraggableFab(btn,storageKey,defaultPos,onTap){
+function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLongPress){
   if(!btn)return;
   const MARGIN=12, TOPBAR_CLEAR=76, BOTTOM_CLEAR=150;
   function bounds(){
@@ -1640,6 +1681,7 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap){
   let pos=loadPos()||defaultPos;
   applyPos(pos.side,pos.top);
 
+  let lpT=0,longFired=false;
   let dragging=false,moved=false,startX=0,startY=0,startTop=0,startLeft=0;
   btn.addEventListener('pointerdown',e=>{
     dragging=true;moved=false;
@@ -1648,38 +1690,77 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap){
     startTop=r.top;startLeft=r.left;
     btn.style.left=startLeft+'px';btn.style.right='auto';btn.style.top=startTop+'px';
     btn.classList.add('dragging');
+    longFired=false;clearTimeout(lpT);
+    if(onLongPress)lpT=setTimeout(()=>{if(dragging&&!moved){longFired=true;btn.classList.remove('dragging');onLongPress(btn);}},450);
     try{btn.setPointerCapture(e.pointerId);}catch(err){}
   });
   btn.addEventListener('pointermove',e=>{
     if(!dragging)return;
     const dx=e.clientX-startX, dy=e.clientY-startY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+    if(Math.abs(dx)>4||Math.abs(dy)>4){moved=true;clearTimeout(lpT);}
     let newLeft=Math.min(Math.max(startLeft+dx,MARGIN),window.innerWidth-btn.offsetWidth-MARGIN);
     const b=bounds();
     let newTop=Math.min(Math.max(startTop+dy,b.min),b.max);
     btn.style.left=newLeft+'px';btn.style.top=newTop+'px';
+    if(document.getElementById('qoriPop'))positionQoriPicker(btn);
   });
   function endDrag(e){
     if(!dragging)return;
+    clearTimeout(lpT);
     dragging=false;btn.classList.remove('dragging');
     if(moved){
       const r=btn.getBoundingClientRect();
       const side=(r.left+r.width/2)<window.innerWidth/2?'left':'right';
       const top=applyPos(side,r.top);
       savePos(side,top);
+      if(document.getElementById('qoriPop'))positionQoriPicker(btn);
     }else{
+      if(longFired){longFired=false;return;}
       onTap&&onTap();
     }
   }
+  btn.addEventListener('contextmenu',e=>e.preventDefault());
   btn.addEventListener('pointerup',endDrag);
   btn.addEventListener('pointercancel',endDrag);
-  window.addEventListener('resize',()=>{const p=loadPos()||defaultPos;applyPos(p.side,p.top);});
+  window.addEventListener('resize',()=>{const p=loadPos()||defaultPos;applyPos(p.side,p.top);if(document.getElementById('qoriPop'))positionQoriPicker(btn);});
 }
 function initModeFab(){
   makeDraggableFab($('modeFab'),'hf-muraja-ah-fab-pos',{side:'right',top:window.innerHeight-220},toggleAppMode);
 }
+/* Tahan tombol audio mengambang -> panel pilihan qori */
+function closeQoriPicker(){const p=document.getElementById('qoriPop');if(p)p.remove();}
+function positionQoriPicker(fab){ // panel selalu menempel pada tombol, termasuk saat tombol digeser
+  const pop=document.getElementById('qoriPop');if(!pop)return;
+  const r=fab.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
+  let left=(r.left+r.width/2)<window.innerWidth/2?r.left:r.right-w;
+  left=Math.min(Math.max(left,12),window.innerWidth-w-12);
+  let top=r.top-h-10;if(top<12)top=r.bottom+10;
+  pop.style.left=left+'px';pop.style.top=top+'px';
+}
+function openQoriPicker(fab){
+  closeQoriPicker();
+  const pop=document.createElement('div');pop.id='qoriPop';pop.className='qori-pop';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','Pilih qori');
+  const active=getActiveQoriId();
+  pop.innerHTML='<div class="qori-pop-t">Pilih qori</div><div class="qori-pop-list"></div>';
+  const list=pop.querySelector('.qori-pop-list');
+  Object.values(QORI_LIST).forEach(cfg=>{
+    const b=document.createElement('button');b.type='button';
+    const on=cfg.id===active;
+    b.className='qori-pop-item'+(on?' on':'');
+    b.textContent=cfg.name+(on?'  ✓':'');
+    b.onclick=()=>{stopAyahAudio();activateQori(cfg.id);closeQoriPicker();};
+    list.appendChild(b);
+  });
+  document.body.appendChild(pop);
+  positionQoriPicker(fab);
+  setTimeout(()=>{
+    const off=e=>{if(pop.contains(e.target)||fab.contains(e.target))return;closeQoriPicker();document.removeEventListener('pointerdown',off,true);document.removeEventListener('keydown',esc,true);};
+    const esc=e=>{if(e.key==='Escape'){closeQoriPicker();document.removeEventListener('pointerdown',off,true);document.removeEventListener('keydown',esc,true);}};
+    document.addEventListener('pointerdown',off,true);document.addEventListener('keydown',esc,true);
+  },0);
+}
 function initAudioFab(){
-  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible);
+  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible,openQoriPicker);
 }
 
 /* ================= Ujian lisan (soal sama, dijawab dengan rekaman) ================= */
