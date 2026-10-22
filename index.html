@@ -190,6 +190,11 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .mode-fab.dragging{transition:none;box-shadow:0 4px 18px rgba(0,0,0,.28)}
 .mode-fab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;pointer-events:none}
 .audio-fab{position:fixed;z-index:26;width:50px;height:50px;border-radius:50%;background:color-mix(in srgb,var(--muted) 42%,transparent);color:var(--on-primary);display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;padding:0;opacity:.7;transition:opacity .18s,background-color .18s}
+#qoriMenu{position:fixed;z-index:60;min-width:230px;max-width:calc(100vw - 16px);background:var(--surface,#fff);color:var(--ink,#111);border:1px solid var(--line2,#ddd);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);padding:6px;font:inherit}
+#qoriMenu .qm-title{font-size:12px;color:var(--muted,#777);padding:6px 10px 4px;font-weight:700}
+#qoriMenu .qm-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:11px 10px;font:600 14px inherit;font-family:inherit;color:inherit;cursor:pointer}
+#qoriMenu .qm-item.on{background:var(--ok-soft,#e6f4ea)}
+#qoriMenu .qm-ck{width:16px;color:var(--em,#0a7)}
 .audio-fab.audio-fab-on{background:color-mix(in srgb,var(--em) 60%,transparent);opacity:1}
 .audio-fab:active{cursor:grabbing}
 .audio-fab.dragging{transition:none;box-shadow:0 4px 18px rgba(0,0,0,.28)}
@@ -542,6 +547,34 @@ body.audio-icons-hidden .sr-play{display:none}
         <button class="btn secondary hidden" id="btnDeleteQori2" type="button">Hapus audio tersimpan</button>
       </div>
     </div>
+    <div class="card" id="qoriCard3">
+      <div class="quiz-q-head" style="margin:0 0 10px">
+        <h3 style="font-size:15px;margin:0">Syeikh Misyari Rasyid Al-Afasy</h3>
+        <button class="qori-active-pill" id="qoriActiveBtn3" type="button"></button>
+      </div>
+      <p class="qori-dl-pill" id="qoriDlStatus3"></p>
+      <div class="bar hidden" id="qoriDlBar3"><i id="qoriDlBarFill3" style="width:0%"></i></div>
+      <div class="btn-row">
+        <button class="btn" id="btnDownloadQori3" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
+        </button>
+        <button class="btn secondary hidden" id="btnDeleteQori3" type="button">Hapus audio tersimpan</button>
+      </div>
+    </div>
+    <div class="card" id="qoriCard4">
+      <div class="quiz-q-head" style="margin:0 0 10px">
+        <h3 style="font-size:15px;margin:0">Syeikh Abu Bakr Ash-Shatri</h3>
+        <button class="qori-active-pill" id="qoriActiveBtn4" type="button"></button>
+      </div>
+      <p class="qori-dl-pill" id="qoriDlStatus4"></p>
+      <div class="bar hidden" id="qoriDlBar4"><i id="qoriDlBarFill4" style="width:0%"></i></div>
+      <div class="btn-row">
+        <button class="btn" id="btnDownloadQori4" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
+        </button>
+        <button class="btn secondary hidden" id="btnDeleteQori4" type="button">Hapus audio tersimpan</button>
+      </div>
+    </div>
   </div>
 
   <div id="view-lainnya" class="hidden">
@@ -738,7 +771,13 @@ const QORI_LIST={
     statusId:'qoriDlStatus',btnId:'btnDownloadQori',delBtnId:'btnDeleteQori',barId:'qoriDlBar',fillId:'qoriDlBarFill',activeBtnId:'qoriActiveBtn1',cardId:'qoriCard1'},
   husary:{id:'husary',name:'Syeikh Mahmoud Khalil Al-Husary',infoKey:'qori-audio-info-husary',keyPrefix:'audio-husary:',
     audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Husary_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
-    statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'}
+    statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'},
+  afasy:{id:'afasy',name:'Syeikh Misyari Rasyid Al-Afasy',infoKey:'qori-audio-info-afasy',keyPrefix:'audio-afasy:',
+    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Alafasy_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
+    statusId:'qoriDlStatus3',btnId:'btnDownloadQori3',delBtnId:'btnDeleteQori3',barId:'qoriDlBar3',fillId:'qoriDlBarFill3',activeBtnId:'qoriActiveBtn3',cardId:'qoriCard3'},
+  shatri:{id:'shatri',name:'Syeikh Abu Bakr Ash-Shatri',infoKey:'qori-audio-info-shatri',keyPrefix:'audio-shatri:',
+    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
+    statusId:'qoriDlStatus4',btnId:'btnDownloadQori4',delBtnId:'btnDeleteQori4',barId:'qoriDlBar4',fillId:'qoriDlBarFill4',activeBtnId:'qoriActiveBtn4',cardId:'qoriCard4'}
 };
 const ACTIVE_QORI_KEY='hf-muraja-ah-active-qori';
 function getActiveQoriId(){try{const v=localStorage.getItem(ACTIVE_QORI_KEY);return QORI_LIST[v]?v:'ayyoub';}catch(e){return 'ayyoub';}}
@@ -1650,10 +1689,12 @@ function makeQoriManager(cfg){
 }
 const qoriAyyoub=makeQoriManager(QORI_LIST.ayyoub);
 const qoriHusary=makeQoriManager(QORI_LIST.husary);
-function refreshQoriStatus(){qoriAyyoub.refresh();qoriHusary.refresh();renderActiveQoriBadges();}
+const qoriAfasy=makeQoriManager(QORI_LIST.afasy);
+const qoriShatri=makeQoriManager(QORI_LIST.shatri);
+function refreshQoriStatus(){qoriAyyoub.refresh();qoriHusary.refresh();qoriAfasy.refresh();qoriShatri.refresh();renderActiveQoriBadges();}
 
 /* ================= Tombol mengambang: geser + magnet ke tepi kiri/kanan ================= */
-function makeDraggableFab(btn,storageKey,defaultPos,onTap){
+function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLong){
   if(!btn)return;
   const MARGIN=12, TOPBAR_CLEAR=76, BOTTOM_CLEAR=150;
   function bounds(){
@@ -1674,9 +1715,13 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap){
   let pos=loadPos()||defaultPos;
   applyPos(pos.side,pos.top);
 
-  let dragging=false,moved=false,startX=0,startY=0,startTop=0,startLeft=0;
+  let dragging=false,moved=false,startX=0,startY=0,startTop=0,startLeft=0,lpTimer=null,longDone=false;
+  function clearLP(){if(lpTimer){clearTimeout(lpTimer);lpTimer=null;}}
+  btn.addEventListener('contextmenu',e=>e.preventDefault());
   btn.addEventListener('pointerdown',e=>{
-    dragging=true;moved=false;
+    dragging=true;moved=false;longDone=false;
+    clearLP();
+    if(onLong)lpTimer=setTimeout(()=>{lpTimer=null;if(dragging&&!moved){longDone=true;try{if(navigator.vibrate)navigator.vibrate(15);}catch(_){}onLong();}},500);
     startX=e.clientX;startY=e.clientY;
     const r=btn.getBoundingClientRect();
     startTop=r.top;startLeft=r.left;
@@ -1687,7 +1732,8 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap){
   btn.addEventListener('pointermove',e=>{
     if(!dragging)return;
     const dx=e.clientX-startX, dy=e.clientY-startY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+    if(Math.abs(dx)>8||Math.abs(dy)>8){moved=true;clearLP();}
+    if(longDone)return;
     let newLeft=Math.min(Math.max(startLeft+dx,MARGIN),window.innerWidth-btn.offsetWidth-MARGIN);
     const b=bounds();
     let newTop=Math.min(Math.max(startTop+dy,b.min),b.max);
@@ -1695,7 +1741,9 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap){
   });
   function endDrag(e){
     if(!dragging)return;
+    clearLP();
     dragging=false;btn.classList.remove('dragging');
+    if(longDone){longDone=false;return;}
     if(moved){
       const r=btn.getBoundingClientRect();
       const side=(r.left+r.width/2)<window.innerWidth/2?'left':'right';
@@ -1709,11 +1757,37 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap){
   btn.addEventListener('pointercancel',endDrag);
   window.addEventListener('resize',()=>{const p=loadPos()||defaultPos;applyPos(p.side,p.top);});
 }
+
+/* Tekan lama tombol audio mengambang -> pilih qori */
+function closeQoriMenu(){const m=document.getElementById('qoriMenu');if(m)m.remove();document.removeEventListener('pointerdown',qoriMenuOutside,true);}
+function qoriMenuOutside(e){const m=document.getElementById('qoriMenu');if(m&&!m.contains(e.target)&&e.target.id!=='audioFab')closeQoriMenu();}
+function openQoriMenu(){
+  closeQoriMenu();
+  const fab=$('audioFab');if(!fab)return;
+  const m=document.createElement('div');m.id='qoriMenu';m.setAttribute('role','menu');
+  const t=document.createElement('div');t.className='qm-title';t.textContent='Pilih qori';m.appendChild(t);
+  const active=getActiveQoriId();
+  Object.values(QORI_LIST).forEach(cfg=>{
+    const b=document.createElement('button');b.type='button';b.setAttribute('role','menuitemradio');
+    b.className='qm-item'+(cfg.id===active?' on':'');
+    b.innerHTML='<span class="qm-ck">'+(cfg.id===active?'✓':'')+'</span><span></span>';
+    b.lastChild.textContent=cfg.name;
+    b.onclick=()=>{if(cfg.id!==getActiveQoriId()){stopAyahAudio();activateQori(cfg.id);}closeQoriMenu();};
+    m.appendChild(b);
+  });
+  document.body.appendChild(m);
+  const r=fab.getBoundingClientRect(),w=m.offsetWidth,h=m.offsetHeight;
+  let left=r.left+r.width/2<window.innerWidth/2?r.left:r.right-w;
+  left=Math.max(8,Math.min(left,window.innerWidth-w-8));
+  let top=r.top-h-10;if(top<8)top=r.bottom+10;
+  m.style.left=left+'px';m.style.top=top+'px';
+  setTimeout(()=>document.addEventListener('pointerdown',qoriMenuOutside,true),0);
+}
 function initModeFab(){
   makeDraggableFab($('modeFab'),'hf-muraja-ah-fab-pos',{side:'right',top:window.innerHeight-220},toggleAppMode);
 }
 function initAudioFab(){
-  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible);
+  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible,openQoriMenu);
 }
 
 /* ================= Ujian lisan (bagian dari mode ujian) =================
