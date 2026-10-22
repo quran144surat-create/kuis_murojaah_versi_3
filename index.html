@@ -1728,6 +1728,11 @@ const LS_I={
   mic:'<svg viewBox="0 0 24 24"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 0 0-7 0v6A3.5 3.5 0 0 0 12 15z"/><path d="M6 11.5a6 6 0 0 0 12 0h-1.8a4.2 4.2 0 0 1-8.4 0z"/><path d="M11 18h2v3h-2z"/></svg>',
   spk:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16.2 8.8a5 5 0 0 1 0 6.4"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>'
 };
+// Mikrofon hanya dibuka saat merekam: mikrofon aktif membuat HP masuk mode panggilan sehingga volume audio jadi kecil.
+const LS_AUDIO={audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}};
+function lsDropStream(){
+  if(LS.stream){LS.stream.getTracks().forEach(t=>{t.onended=null;try{t.stop();}catch(e){}});LS.stream=null;}
+}
 function lsMime(){
   const c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
   for(const m of c){try{if(window.MediaRecorder&&MediaRecorder.isTypeSupported(m))return m;}catch(e){}}
@@ -1792,7 +1797,7 @@ function lsRecFail(msg){
   if(!LS.active||LS.state!=='rec')return;
   LS.discard=true;
   if(LS.rec){LS.rec.onstop=null;LS.rec.ondataavailable=null;LS.rec.onerror=null;try{if(LS.rec.state!=='inactive')LS.rec.stop();}catch(e){}LS.rec=null;}
-  LS.chunks=[];LS.locked=false;
+  LS.chunks=[];LS.locked=false;lsDropStream();
   if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
   LS.state='ready';LS.msg=msg;
   lsRender();
@@ -1902,19 +1907,20 @@ async function startLisan(){
   }
   LS.busy=true;
   let stream;
-  try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+  try{stream=await navigator.mediaDevices.getUserMedia(LS_AUDIO);}
   catch(e){
     LS.busy=false;
     $('ujianMsg').textContent=lsMicErr(e);
     return;
   }
   LS.busy=false;
+  stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}}); // izin sudah didapat; mikrofon ditutup lagi sampai tombol rekam ditekan
   lsFreeUrl();
   const flat=[];soal.forEach(x=>x.ans.forEach(g=>flat.push(g)));
   QUIZ={mode:'sambung',items:flat,idx:0,correct:0,detail:[],ujian:'lisan',
     src:document.querySelector('input[name=src]:checked').value,owner:historyOwner()};
   LS.soal=soal;LS.si=0;LS.ai=0;LS.okSoal=0;LS.msg='';LS.discard=false;LS.locked=false;
-  LS.stream=stream;LS.active=true;LS.state='ready';
+  LS.stream=null;LS.active=true;LS.state='ready';
   lsWake();
   stopAyahAudio();
   view('lisan');
@@ -1926,8 +1932,9 @@ async function lsStartRec(){
   stopAyahAudio();
   // mikrofon bisa terputus di antara ayat (mis. telepon masuk): ambil ulang bila perlu
   if(!LS.stream||LS.stream.getTracks().every(t=>t.readyState==='ended')){
+    lsDropStream();
     let st;
-    try{st=await navigator.mediaDevices.getUserMedia({audio:true});}
+    try{st=await navigator.mediaDevices.getUserMedia(LS_AUDIO);}
     catch(e){LS.locked=false;if(LS.active){LS.msg=lsMicErr(e);lsRender();}return;}
     if(!LS.active){st.getTracks().forEach(t=>{try{t.stop();}catch(e){}});return;}
     LS.stream=st;
@@ -1959,6 +1966,7 @@ function lsStopRec(){
   if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
   rec.onstop=()=>{
     LS.locked=false;
+    lsDropStream(); // tutup mikrofon agar volume pemutaran kembali normal
     if(!LS.active||LS.discard)return;
     const blob=new Blob(LS.chunks,{type:rec.mimeType||'audio/webm'});
     LS.chunks=[];LS.rec=null;
