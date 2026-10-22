@@ -53,6 +53,9 @@ html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
 h1,h2,h3{font-family:var(--serif);margin:0}
 .arab{font-family:var(--arab);direction:rtl;font-size:26px;line-height:2.1}
+/* teks tidak bisa dipilih / disalin */
+html,body,*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text}
 .wrap{max-width:640px;margin:0 auto;padding:18px 16px 90px}
 .hero{background:linear-gradient(135deg,var(--primary),#134D3D);color:var(--on-primary);border-radius:20px;padding:20px 20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
 .hero h1{font-size:22px}
@@ -2301,6 +2304,22 @@ if('serviceWorker' in navigator){
   window.addEventListener('popstate',closeM);
   window.addEventListener('keydown',function(e){if(e.key==='Escape'&&isOpen)requestClose();});
   window.addEventListener('message',function(e){if(e.data&&e.data.type==='close-mushaf'&&isOpen)requestClose();});
+})();
+</script>
+<script>
+/* Cegah penyalinan teks: seleksi, salin/potong, menu klik-kanan/tahan lama, seret teks, pintasan Ctrl+C/A/U/S/P. */
+(function(){
+  function editable(t){return t&&t.closest&&t.closest('input,textarea,[contenteditable]');}
+  ['copy','cut','contextmenu','selectstart','dragstart'].forEach(function(ev){
+    document.addEventListener(ev,function(e){if(!editable(e.target))e.preventDefault();},true);
+  });
+  document.addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey)&&/^[acxsup]$/i.test(e.key)&&!editable(e.target))e.preventDefault();
+  },true);
+  document.addEventListener('selectionchange',function(){
+    var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
+    var sel=window.getSelection&&window.getSelection();if(sel&&!sel.isCollapsed)sel.removeAllRanges();
+  });
 })();
 </script>
 </body>
