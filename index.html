@@ -942,8 +942,8 @@ function currentUjian(){const r=document.querySelector('input[name=ujian]:checke
 function applyUjianUI(){
   const l=currentUjian()==='lisan';
   $('btnStart').textContent=l?'Mulai ujian lisan':'Mulai ujian';
-  $('ujianHint').textContent=l?'Seluruh ayat pada cakupan dibagi otomatis ke beberapa soal menurut panjang ayat. Tiap ayat dijawab dengan rekaman, lalu Anda dengarkan dan koreksi sendiri.':'Jawab soal dengan memilih jawaban.';
-  const jc=$('jmlCard');if(jc)jc.style.display=l?'none':'';
+  $('ujianHint').textContent=l?'Soal diacak dari cakupan, jumlahnya sesuai pilihan. Tiap soal berisi beberapa ayat (menurut panjang ayat) yang dijawab dengan rekaman, lalu Anda dengarkan dan koreksi sendiri.':'Jawab soal dengan memilih jawaban.';
+  const jc=$('jmlCard');if(jc)jc.style.display='';
 }
 function renderScopePanel(){
   const box=$('scopePanel');
@@ -1842,7 +1842,11 @@ function lsRender(){
 async function startLisan(){
   if(LS.busy||LS.active)return;
   $('ujianMsg').textContent='';
-  const soal=lsBuildSoal();
+  const all=lsBuildSoal();
+  // acak potongan soal (tanpa tumpang tindih), lalu ambil sebanyak jumlah soal yang dipilih
+  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]];}
+  const n=+document.querySelector('input[name=jml]:checked').value;
+  const soal=all.slice(0,n);
   if(!soal.length){$('ujianMsg').textContent='Tidak ada ayat yang bisa dijadikan soal lisan pada cakupan ini. Pilih cakupan lain.';return;}
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){
     $('ujianMsg').textContent='Browser ini belum mendukung perekaman suara.';return;
