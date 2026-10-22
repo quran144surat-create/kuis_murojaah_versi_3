@@ -720,7 +720,7 @@ const $=id=>document.getElementById(id);
 const view=name=>{
   if(name!=='quiz')stopAyahAudio();
   ['loading','beranda','serupa','home','lisan','quiz','result','history','lainnya','pengaturan','pengaturan-audio','pengaturan-audio-qori'].forEach(v=>$('view-'+v).classList.toggle('hidden',v!==name));
-  const tb=$('tabbar');if(tb)tb.classList.toggle('hidden',name==='loading'||name==='quiz');
+  const tb=$('tabbar');if(tb)tb.classList.toggle('hidden',name==='loading'||name==='quiz'||name==='lisan');
   const tBeranda=$('tabBeranda');if(tBeranda)tBeranda.classList.toggle('active',name==='beranda'||name==='serupa');
   const tPengaturan=$('tabPengaturan');if(tPengaturan)tPengaturan.classList.toggle('active',name.indexOf('pengaturan')===0);
   const tLainnya=$('tabLainnya');if(tLainnya)tLainnya.classList.toggle('active',name==='lainnya');
@@ -805,7 +805,7 @@ async function playAyahAudio(g,el){
   }catch(e){/* IndexedDB tak tersedia: tetap pakai URL online */}
   if(AY_AUDIO_G!==g)return; // sempat dibatalkan/berganti ayat saat menunggu cache
   AY_AUDIO.src=src;
-  AY_AUDIO.play().catch(()=>{stopAyahAudio();notifyAudioUnavailable();});
+  AY_AUDIO.play().catch(err=>{stopAyahAudio();if(err&&err.name==='NotAllowedError'&&typeof LS!=='undefined'&&LS.active){const m=$('lsNote');if(m)m.textContent='Pemutaran otomatis diblokir browser. Ketuk tombol putar.';}else notifyAudioUnavailable();});
   if(el)el.classList.add('playing');
 }
 
@@ -1714,6 +1714,7 @@ function lsEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g
 function lsWords(g){return (QTEXT[g-1]||'').split(/\s+/).filter(Boolean).length;}
 function lsBuildSoal(){
   const pool=buildPool();
+  const sp=scopeSpan();
   const runs=[];let run=[];
   pool.forEach(g=>{
     if(run.length){
@@ -1728,7 +1729,7 @@ function lsBuildSoal(){
   runs.forEach(r=>{
     if(r.length===1){ // ayat tunggal: tanyakan ayat sesudahnya bila masih di surat yang sama
       const {s,a}=ayahFromG(r[0]);
-      if(a<AY[s-1])soal.push({q:r[0],ans:[r[0]+1]});
+      if(a<AY[s-1]&&(!sp||r[0]+1<=sp.g2))soal.push({q:r[0],ans:[r[0]+1]});
       return;
     }
     let i=0;
@@ -1744,6 +1745,29 @@ function lsBuildSoal(){
     }
   });
   return soal;
+}
+function lsMicErr(e){
+  const n=e&&e.name;
+  if(n==='NotFoundError'||n==='DevicesNotFoundError')return 'Mikrofon tidak ditemukan di perangkat ini. Sambungkan mikrofon atau headset, lalu coba lagi.';
+  if(n==='NotReadableError'||n==='TrackStartError'||n==='AbortError')return 'Mikrofon sedang dipakai aplikasi lain. Tutup aplikasi yang memakai mikrofon (panggilan, perekam suara), lalu coba lagi.';
+  return 'Izin mikrofon ditolak. Buka pengaturan situs di browser (ikon gembok), izinkan Mikrofon, muat ulang halaman, lalu coba lagi.';
+}
+function lsWake(){
+  if(!LS.active||LS.lock||!navigator.wakeLock)return;
+  try{navigator.wakeLock.request('screen').then(l=>{
+    if(LS.active&&!LS.lock){LS.lock=l;l.addEventListener('release',()=>{if(LS.lock===l)LS.lock=null;});}
+    else{try{l.release();}catch(e){}}
+  }).catch(()=>{});}catch(e){}
+}
+// Buang rekaman yang sedang berjalan, kembali ke status siap, tampilkan pesan.
+function lsRecFail(msg){
+  if(!LS.active||LS.state!=='rec')return;
+  LS.discard=true;
+  if(LS.rec){LS.rec.onstop=null;LS.rec.ondataavailable=null;LS.rec.onerror=null;try{if(LS.rec.state!=='inactive')LS.rec.stop();}catch(e){}LS.rec=null;}
+  LS.chunks=[];LS.locked=false;
+  if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
+  LS.state='ready';LS.msg=msg;
+  lsRender();
 }
 function lsStopPlayer(){
   if(LS.player){try{LS.player.pause();}catch(e){}LS.player=null;}
@@ -1849,15 +1873,14 @@ async function startLisan(){
   const soal=all.slice(0,n);
   if(!soal.length){$('ujianMsg').textContent='Tidak ada ayat yang bisa dijadikan soal lisan pada cakupan ini. Pilih cakupan lain.';return;}
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){
-    $('ujianMsg').textContent='Browser ini belum mendukung perekaman suara.';return;
+    $('ujianMsg').textContent=window.isSecureContext===false?'Perekaman suara butuh koneksi aman. Buka aplikasi lewat alamat https://, bukan http:// atau file.':'Browser ini belum mendukung perekaman suara. Perbarui browser, atau buka lewat Chrome (Android) / Safari (iPhone).';return;
   }
   LS.busy=true;
   let stream;
   try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
   catch(e){
     LS.busy=false;
-    const nf=e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError');
-    $('ujianMsg').textContent=nf?'Mikrofon tidak ditemukan di perangkat ini.':'Izin mikrofon ditolak. Izinkan mikrofon untuk halaman ini di pengaturan browser, lalu coba lagi.';
+    $('ujianMsg').textContent=lsMicErr(e);
     return;
   }
   LS.busy=false;
@@ -1867,22 +1890,36 @@ async function startLisan(){
     src:document.querySelector('input[name=src]:checked').value,owner:historyOwner()};
   LS.soal=soal;LS.si=0;LS.ai=0;LS.okSoal=0;LS.msg='';LS.discard=false;LS.locked=false;
   LS.stream=stream;LS.active=true;LS.state='ready';
-  try{if(navigator.wakeLock)LS.lock=await navigator.wakeLock.request('screen');}catch(e){}
+  lsWake();
   stopAyahAudio();
   view('lisan');
   lsRender();
 }
-function lsStartRec(){
+async function lsStartRec(){
   if(!LS.active||LS.state!=='ready'||LS.locked)return;
+  LS.locked=true;
   stopAyahAudio();
+  // mikrofon bisa terputus di antara ayat (mis. telepon masuk): ambil ulang bila perlu
+  if(!LS.stream||LS.stream.getTracks().every(t=>t.readyState==='ended')){
+    let st;
+    try{st=await navigator.mediaDevices.getUserMedia({audio:true});}
+    catch(e){LS.locked=false;if(LS.active){LS.msg=lsMicErr(e);lsRender();}return;}
+    if(!LS.active){st.getTracks().forEach(t=>{try{t.stop();}catch(e){}});return;}
+    LS.stream=st;
+  }
+  if(LS.state!=='ready'){LS.locked=false;return;}
   LS.chunks=[];LS.discard=false;
   const mime=lsMime();
   try{LS.rec=mime?new MediaRecorder(LS.stream,{mimeType:mime}):new MediaRecorder(LS.stream);}
-  catch(e){LS.msg='Perekaman tidak bisa dimulai di perangkat ini.';lsRender();return;}
+  catch(e){LS.locked=false;LS.msg='Perekaman tidak bisa dimulai di perangkat ini. Muat ulang halaman atau coba browser lain.';lsRender();return;}
   LS.rec.ondataavailable=ev=>{if(ev.data&&ev.data.size)LS.chunks.push(ev.data);};
-  LS.rec.start(1000); // tanpa batas durasi; data disimpan berkala
+  LS.rec.onerror=()=>lsRecFail('Perekaman terhenti karena ada gangguan. Silakan rekam ulang.');
+  LS.stream.getTracks().forEach(t=>{t.onended=()=>lsRecFail('Mikrofon terputus. Silakan rekam ulang.');});
+  try{LS.rec.start(1000);} // tanpa batas durasi; data disimpan berkala
+  catch(e){LS.rec=null;LS.locked=false;LS.msg='Perekaman tidak bisa dimulai di perangkat ini. Muat ulang halaman atau coba browser lain.';lsRender();return;}
   LS.t0=Date.now();
   LS.state='rec';
+  LS.locked=false;
   lsRender();
   if(LS.timer)clearInterval(LS.timer);
   LS.timer=setInterval(()=>{
@@ -1900,7 +1937,7 @@ function lsStopRec(){
     if(!LS.active||LS.discard)return;
     const blob=new Blob(LS.chunks,{type:rec.mimeType||'audio/webm'});
     LS.chunks=[];LS.rec=null;
-    if(!blob.size){LS.msg='Rekaman kosong. Coba rekam lagi.';LS.state='ready';lsRender();return;}
+    if(!blob.size){LS.msg='Rekaman kosong. Pastikan mikrofon tidak tertutup dan tidak dipakai aplikasi lain, lalu rekam lagi.';LS.state='ready';lsRender();return;}
     lsFreeUrl();
     LS.url=URL.createObjectURL(blob);
     LS.state='review';
@@ -1932,13 +1969,9 @@ function lsNextSoal(){
 }
 // Aplikasi disembunyikan saat merekam: hentikan dengan aman, buang rekaman, minta rekam ulang.
 document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&LS.active)lsWake(); // Wake Lock dilepas browser saat disembunyikan
   if(!document.hidden||!LS.active||LS.state!=='rec')return;
-  LS.discard=true;
-  if(LS.rec){LS.rec.onstop=null;LS.rec.ondataavailable=null;try{if(LS.rec.state!=='inactive')LS.rec.stop();}catch(e){}LS.rec=null;}
-  LS.chunks=[];LS.locked=false;
-  if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
-  LS.state='ready';LS.msg='Rekaman dihentikan karena aplikasi ditutup sementara. Silakan rekam ulang.';
-  lsRender();
+  lsRecFail('Rekaman dihentikan karena aplikasi ditutup sementara. Silakan rekam ulang.');
 });
 function initLisan(){
   $('btnLsQuit').onclick=()=>view('home');
@@ -2128,7 +2161,7 @@ $('btnHistory').onclick=()=>{renderHistory();view('history');};
 $('btnHistBack').onclick=()=>view('home');
 $('btnQuit').onclick=()=>view('home');
 $('btnKirimJawaban').onclick=submitAnswer;
-$('btnRetry').onclick=()=>{if(QUIZ&&QUIZ.weak)startWeakQuiz();else startQuiz();};
+$('btnRetry').onclick=()=>{if(QUIZ&&QUIZ.weak)startWeakQuiz();else if(QUIZ&&QUIZ.ujian==='lisan'){view('home');startLisan();}else startQuiz();};
 $('btnWeakQuiz').onclick=startWeakQuiz;
 $('btnHome').onclick=()=>view('home');
 $('tabBeranda').onclick=()=>view('beranda');
