@@ -58,9 +58,9 @@ h1,h2,h3{font-family:var(--serif);margin:0}
 .hero h1{font-size:22px}
 .hero p{margin:4px 0 0;opacity:.85;font-size:13.5px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
-#qoriCard1,#qoriCard2,#qoriCard3,#qoriCard4{cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .08s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
-#qoriCard1:active,#qoriCard2:active,#qoriCard3:active,#qoriCard4:active{transform:scale(.985)}
-#qoriCard1.qori-card-active,#qoriCard2.qori-card-active,#qoriCard3.qori-card-active,#qoriCard4.qori-card-active{border-color:var(--em);box-shadow:var(--shadow),0 0 0 1px var(--em) inset;cursor:default}
+#qoriCard1,#qoriCard2{cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .08s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+#qoriCard1:active,#qoriCard2:active{transform:scale(.985)}
+#qoriCard1.qori-card-active,#qoriCard2.qori-card-active{border-color:var(--em);box-shadow:var(--shadow),0 0 0 1px var(--em) inset;cursor:default}
 .tile{background:var(--tile);border-radius:14px;padding:12px 14px}
 .muted{color:var(--muted)}
 .btn{appearance:none;border:none;border-radius:12px;padding:12px 18px;font:600 14.5px var(--sans);cursor:pointer;background:var(--primary);color:var(--on-primary)}
@@ -190,11 +190,6 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .audio-fab.audio-fab-on{background:color-mix(in srgb,var(--em) 60%,transparent);opacity:1}
 .audio-fab:active{cursor:grabbing}
 .audio-fab.dragging{transition:none;box-shadow:0 4px 18px rgba(0,0,0,.28)}
-.qori-pop{position:fixed;z-index:40;width:min(250px,calc(100vw - 24px));padding:8px;border-radius:20px;background:var(--surface);border:1px solid var(--line2);box-shadow:var(--shadow),0 12px 32px rgba(0,0,0,.22)}
-.qori-pop-t{font:700 12px var(--sans);color:var(--muted);padding:2px 8px 6px}
-.qori-pop-list{display:flex;flex-direction:column;gap:4px;padding:4px;border-radius:14px;background:var(--surface2);border:1px solid var(--line)}
-.qori-pop-item{appearance:none;border:none;text-align:left;cursor:pointer;padding:10px 12px;border-radius:10px;background:transparent;color:var(--ink);font:600 13.5px var(--sans);touch-action:manipulation}
-.qori-pop-item.on{background:var(--em);color:var(--on-primary);font-weight:800}
 .audio-fab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;pointer-events:none}
 .mode-toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(6px);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font:600 12.5px var(--sans);z-index:27;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;box-shadow:var(--shadow);white-space:nowrap}
 .mode-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -222,6 +217,29 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .sw[aria-checked=true]::after{transform:translateX(22px)}
 .rec-dot{width:10px;height:10px;border-radius:50%;background:#D93A2B;animation:recpulse 1.1s ease-in-out infinite}
 @keyframes recpulse{0%,100%{opacity:1}50%{opacity:.25}}
+.ls-card{border:2px solid var(--em);border-radius:22px;text-align:center;padding:20px 16px}
+.ls-title{display:flex;justify-content:center;align-items:center;gap:8px;font:700 18px var(--sans);color:var(--accent-text)}
+.ls-title svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+.ls-sub{color:var(--muted);margin:6px 0 16px;font-size:14px}
+.ls-lbl{font:700 19px var(--sans);color:var(--accent-text);margin:14px 0}
+.ls-round{width:78px;height:78px;border-radius:50%;border:3px solid var(--em);background:transparent;color:var(--em);display:flex;align-items:center;justify-content:center;margin:0 auto;cursor:pointer}
+.ls-round svg{width:32px;height:32px;fill:currentColor}
+.ls-round.playing{background:var(--em);color:#fff}
+.ls-mic{width:108px;height:108px;border-radius:50%;border:none;background:var(--em);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto;cursor:pointer}
+.ls-mic svg{width:44px;height:44px;fill:currentColor}
+.ls-mic.rec{background:#D93A2B;animation:recpulse 1.1s ease-in-out infinite}
+.ls-hint{color:var(--muted);font-size:14px;margin:14px 8px 0}
+.ls-qbox,.ls-abox{border-radius:16px;padding:4px 14px;margin:10px 0}
+.ls-qbox{background:var(--tile)}
+.ls-abox{border:1.5px solid var(--em);background:var(--ok-soft);position:relative}
+.ls-abox .audio-btn{position:absolute;left:8px;top:8px}
+.ls-pill{appearance:none;border:2px solid var(--em);background:transparent;color:var(--accent-text);border-radius:99px;padding:11px 22px;font:700 15px var(--sans);cursor:pointer;margin:6px 0 14px}
+.ls-pill.playing{background:var(--em);color:#fff}
+.ls-judge{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.ls-judge button{appearance:none;border:none;border-radius:14px;padding:15px;font:700 16px var(--sans);color:#fff;cursor:pointer}
+.ls-no{background:#E5484D}.ls-yes{background:#52B718}
+.ls-note{color:var(--warn);font-size:13.5px;margin:0 0 12px}
+.ls-big{font:700 32px var(--serif);margin:6px 0 2px}
 .ls-mark{padding:6px 12px!important;font-size:13px!important}
 .ls-mark.ok{background:var(--ok-soft);color:var(--em);border-color:var(--em)}
 .ls-mark.bad{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
@@ -376,7 +394,7 @@ body.audio-icons-hidden .sr-play{display:none}
       <p class="status" id="srcHint" style="margin-top:8px"></p>
     </div>
 
-    <div class="card">
+    <div class="card" id="jmlCard">
       <h3 style="font-size:15px;margin-bottom:10px">Jumlah soal</h3>
       <div class="seg">
         <label><input type="radio" name="jml" value="5"><span>5</span></label>
@@ -395,17 +413,13 @@ body.audio-icons-hidden .sr-play{display:none}
     </div>
   </div>
 
-  <div id="view-tasmi" class="hidden">
+  <div id="view-lisan" class="hidden">
     <div class="topbar">
-      <button class="icon-btn" id="btnTsBack" aria-label="Kembali"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <span class="pill">Jawaban lisan</span>
+      <button class="icon-btn" id="btnLsQuit" aria-label="Keluar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span class="pill" id="lsProgress">Soal 1 / 1</span>
     </div>
-    <p class="muted" style="margin:0 0 10px;font-size:13px">Dengarkan jawabanmu, bandingkan dengan jawaban benar, lalu tandai Benar atau Salah. Rekaman tidak disimpan.</p>
-    <div id="lsList"></div>
-    <div class="card" id="lsSummary"></div>
-    <div class="btn-row">
-      <button class="btn" id="btnTsSave">Simpan hasil</button>
-    </div>
+    <div class="bar"><i id="lsBar" style="width:0%"></i></div>
+    <div class="card ls-card" id="lsCard"></div>
   </div>
 
   <div id="view-quiz" class="hidden">
@@ -424,16 +438,9 @@ body.audio-icons-hidden .sr-play{display:none}
       <div class="arab" id="quizArab"></div>
       <a class="btn secondary" id="btnMushaf" href="#" style="display:none;margin-top:10px">📖 Buka di Mushaf</a>
     </div>
-    <div class="card" id="lisanPanel" style="display:none;text-align:center">
-      <div style="display:inline-flex;align-items:center;gap:8px;font:700 15px var(--sans)"><span class="rec-dot"></span>Merekam <span id="lisanTimer">00:00</span></div>
-      <p class="status" style="margin:8px 0 0">Jawab dengan lisan, lalu ketuk tombol di bawah.</p>
-    </div>
     <div id="quizOptions"></div>
     <div class="btn-row" id="quizSubmitRow" style="display:none">
       <button class="btn" id="btnKirimJawaban" disabled>Kirim Jawaban</button>
-    </div>
-    <div class="btn-row" id="lisanRow" style="display:none;position:sticky;bottom:10px">
-      <button class="btn" id="btnLisanNext" style="width:100%">Soal berikutnya</button>
     </div>
   </div>
 
@@ -530,34 +537,6 @@ body.audio-icons-hidden .sr-play{display:none}
           <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
         </button>
         <button class="btn secondary hidden" id="btnDeleteQori2" type="button">Hapus audio tersimpan</button>
-      </div>
-    </div>
-    <div class="card" id="qoriCard3">
-      <div class="quiz-q-head" style="margin:0 0 10px">
-        <h3 style="font-size:15px;margin:0">Misyari Rasyid Al-Afasy</h3>
-        <button class="qori-active-pill" id="qoriActiveBtn3" type="button"></button>
-      </div>
-      <p class="qori-dl-pill" id="qoriDlStatus3"></p>
-      <div class="bar hidden" id="qoriDlBar3"><i id="qoriDlBarFill3" style="width:0%"></i></div>
-      <div class="btn-row">
-        <button class="btn" id="btnDownloadQori3" type="button">
-          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
-        </button>
-        <button class="btn secondary hidden" id="btnDeleteQori3" type="button">Hapus audio tersimpan</button>
-      </div>
-    </div>
-    <div class="card" id="qoriCard4">
-      <div class="quiz-q-head" style="margin:0 0 10px">
-        <h3 style="font-size:15px;margin:0">Abu Bakr Ash-Shatri</h3>
-        <button class="qori-active-pill" id="qoriActiveBtn4" type="button"></button>
-      </div>
-      <p class="qori-dl-pill" id="qoriDlStatus4"></p>
-      <div class="bar hidden" id="qoriDlBar4"><i id="qoriDlBarFill4" style="width:0%"></i></div>
-      <div class="btn-row">
-        <button class="btn" id="btnDownloadQori4" type="button">
-          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Unduh Audio Qori
-        </button>
-        <button class="btn secondary hidden" id="btnDeleteQori4" type="button">Hapus audio tersimpan</button>
       </div>
     </div>
   </div>
@@ -740,14 +719,13 @@ let QUIZ=null;
 const $=id=>document.getElementById(id);
 const view=name=>{
   if(name!=='quiz')stopAyahAudio();
-  ['loading','beranda','serupa','home','tasmi','quiz','result','history','lainnya','pengaturan','pengaturan-audio','pengaturan-audio-qori'].forEach(v=>$('view-'+v).classList.toggle('hidden',v!==name));
+  ['loading','beranda','serupa','home','lisan','quiz','result','history','lainnya','pengaturan','pengaturan-audio','pengaturan-audio-qori'].forEach(v=>$('view-'+v).classList.toggle('hidden',v!==name));
   const tb=$('tabbar');if(tb)tb.classList.toggle('hidden',name==='loading'||name==='quiz');
   const tBeranda=$('tabBeranda');if(tBeranda)tBeranda.classList.toggle('active',name==='beranda'||name==='serupa');
   const tPengaturan=$('tabPengaturan');if(tPengaturan)tPengaturan.classList.toggle('active',name.indexOf('pengaturan')===0);
   const tLainnya=$('tabLainnya');if(tLainnya)tLainnya.classList.toggle('active',name==='lainnya');
   if(name==='beranda'&&typeof renderWeakCard==='function')renderWeakCard();
-  if(name!=='quiz'&&typeof lsLeave==='function')lsLeave();
-  if(name!=='tasmi'&&typeof lsRevoke==='function')lsRevoke();
+  if(name!=='lisan'&&typeof lsLeave==='function')lsLeave();
 };
 
 /* ================= Daftar qori & qori aktif ================= */
@@ -757,13 +735,7 @@ const QORI_LIST={
     statusId:'qoriDlStatus',btnId:'btnDownloadQori',delBtnId:'btnDeleteQori',barId:'qoriDlBar',fillId:'qoriDlBarFill',activeBtnId:'qoriActiveBtn1',cardId:'qoriCard1'},
   husary:{id:'husary',name:'Syeikh Mahmoud Khalil Al-Husary',infoKey:'qori-audio-info-husary',keyPrefix:'audio-husary:',
     audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Husary_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
-    statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'},
-  afasy:{id:'afasy',name:'Misyari Rasyid Al-Afasy',infoKey:'qori-audio-info-afasy',keyPrefix:'audio-afasy:',
-    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Alafasy_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
-    statusId:'qoriDlStatus3',btnId:'btnDownloadQori3',delBtnId:'btnDeleteQori3',barId:'qoriDlBar3',fillId:'qoriDlBarFill3',activeBtnId:'qoriActiveBtn3',cardId:'qoriCard3'},
-  shatri:{id:'shatri',name:'Abu Bakr Ash-Shatri',infoKey:'qori-audio-info-shatri',keyPrefix:'audio-shatri:',
-    audioUrl:g=>{const x=ayahFromG(g);return 'https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_128kbps/'+String(x.s).padStart(3,'0')+String(x.a).padStart(3,'0')+'.mp3';},
-    statusId:'qoriDlStatus4',btnId:'btnDownloadQori4',delBtnId:'btnDeleteQori4',barId:'qoriDlBar4',fillId:'qoriDlBarFill4',activeBtnId:'qoriActiveBtn4',cardId:'qoriCard4'}
+    statusId:'qoriDlStatus2',btnId:'btnDownloadQori2',delBtnId:'btnDeleteQori2',barId:'qoriDlBar2',fillId:'qoriDlBarFill2',activeBtnId:'qoriActiveBtn2',cardId:'qoriCard2'}
 };
 const ACTIVE_QORI_KEY='hf-muraja-ah-active-qori';
 function getActiveQoriId(){try{const v=localStorage.getItem(ACTIVE_QORI_KEY);return QORI_LIST[v]?v:'ayyoub';}catch(e){return 'ayyoub';}}
@@ -970,7 +942,8 @@ function currentUjian(){const r=document.querySelector('input[name=ujian]:checke
 function applyUjianUI(){
   const l=currentUjian()==='lisan';
   $('btnStart').textContent=l?'Mulai ujian lisan':'Mulai ujian';
-  $('ujianHint').textContent=l?'Soal sama seperti pilih jawaban, tapi dijawab dengan lisan sambil direkam. Jawaban benar tampil per ayat setelah selesai merekam.':'Jawab soal dengan memilih jawaban.';
+  $('ujianHint').textContent=l?'Seluruh ayat pada cakupan dibagi otomatis ke beberapa soal menurut panjang ayat. Tiap ayat dijawab dengan rekaman, lalu Anda dengarkan dan koreksi sendiri.':'Jawab soal dengan memilih jawaban.';
+  const jc=$('jmlCard');if(jc)jc.style.display=l?'none':'';
 }
 function renderScopePanel(){
   const box=$('scopePanel');
@@ -1131,10 +1104,6 @@ function renderQuestionCore(){
 }
 function renderQuestion(){
   renderQuestionCore();
-  const l=!!(QUIZ&&QUIZ.ujian==='lisan');
-  $('lisanPanel').style.display=l?'block':'none';
-  $('lisanRow').style.display=l?'flex':'none';
-  if(l)lsAfterRender();
 }
 function pickChoicesForSambung(s,a,correctA,maxA){
   const set=new Set([correctA]);
@@ -1461,7 +1430,7 @@ function updateAudioFabUI(){
   const fab=$('audioFab');if(!fab)return;
   fab.innerHTML=isOn?ICON_AUDIO_ON:ICON_AUDIO_OFF;
   fab.classList.toggle('audio-fab-on',isOn);
-  const label=isOn?'Audio ayat: Aktif (ketuk untuk nonaktifkan sementara, tahan untuk ganti qori, seret untuk pindah)':'Audio ayat: Nonaktif sementara (ketuk untuk tampilkan lagi, seret untuk pindah)';
+  const label=isOn?'Audio ayat: Aktif (ketuk untuk nonaktifkan sementara, seret untuk pindah)':'Audio ayat: Nonaktif sementara (ketuk untuk tampilkan lagi, seret untuk pindah)';
   fab.title=label;fab.setAttribute('aria-label',label);
 }
 function toggleAudioIconsVisible(){
@@ -1655,12 +1624,10 @@ function makeQoriManager(cfg){
 }
 const qoriAyyoub=makeQoriManager(QORI_LIST.ayyoub);
 const qoriHusary=makeQoriManager(QORI_LIST.husary);
-const qoriAfasy=makeQoriManager(QORI_LIST.afasy);
-const qoriShatri=makeQoriManager(QORI_LIST.shatri);
-function refreshQoriStatus(){qoriAyyoub.refresh();qoriHusary.refresh();qoriAfasy.refresh();qoriShatri.refresh();renderActiveQoriBadges();}
+function refreshQoriStatus(){qoriAyyoub.refresh();qoriHusary.refresh();renderActiveQoriBadges();}
 
 /* ================= Tombol mengambang: geser + magnet ke tepi kiri/kanan ================= */
-function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLongPress){
+function makeDraggableFab(btn,storageKey,defaultPos,onTap){
   if(!btn)return;
   const MARGIN=12, TOPBAR_CLEAR=76, BOTTOM_CLEAR=150;
   function bounds(){
@@ -1681,7 +1648,6 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLongPress){
   let pos=loadPos()||defaultPos;
   applyPos(pos.side,pos.top);
 
-  let lpT=0,longFired=false;
   let dragging=false,moved=false,startX=0,startY=0,startTop=0,startLeft=0;
   btn.addEventListener('pointerdown',e=>{
     dragging=true;moved=false;
@@ -1690,217 +1656,288 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLongPress){
     startTop=r.top;startLeft=r.left;
     btn.style.left=startLeft+'px';btn.style.right='auto';btn.style.top=startTop+'px';
     btn.classList.add('dragging');
-    longFired=false;clearTimeout(lpT);
-    if(onLongPress)lpT=setTimeout(()=>{if(dragging&&!moved){longFired=true;btn.classList.remove('dragging');onLongPress(btn);}},450);
     try{btn.setPointerCapture(e.pointerId);}catch(err){}
   });
   btn.addEventListener('pointermove',e=>{
     if(!dragging)return;
     const dx=e.clientX-startX, dy=e.clientY-startY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4){moved=true;clearTimeout(lpT);}
+    if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
     let newLeft=Math.min(Math.max(startLeft+dx,MARGIN),window.innerWidth-btn.offsetWidth-MARGIN);
     const b=bounds();
     let newTop=Math.min(Math.max(startTop+dy,b.min),b.max);
     btn.style.left=newLeft+'px';btn.style.top=newTop+'px';
-    if(document.getElementById('qoriPop'))positionQoriPicker(btn);
   });
   function endDrag(e){
     if(!dragging)return;
-    clearTimeout(lpT);
     dragging=false;btn.classList.remove('dragging');
     if(moved){
       const r=btn.getBoundingClientRect();
       const side=(r.left+r.width/2)<window.innerWidth/2?'left':'right';
       const top=applyPos(side,r.top);
       savePos(side,top);
-      if(document.getElementById('qoriPop'))positionQoriPicker(btn);
     }else{
-      if(longFired){longFired=false;return;}
       onTap&&onTap();
     }
   }
-  btn.addEventListener('contextmenu',e=>e.preventDefault());
   btn.addEventListener('pointerup',endDrag);
   btn.addEventListener('pointercancel',endDrag);
-  window.addEventListener('resize',()=>{const p=loadPos()||defaultPos;applyPos(p.side,p.top);if(document.getElementById('qoriPop'))positionQoriPicker(btn);});
+  window.addEventListener('resize',()=>{const p=loadPos()||defaultPos;applyPos(p.side,p.top);});
 }
 function initModeFab(){
   makeDraggableFab($('modeFab'),'hf-muraja-ah-fab-pos',{side:'right',top:window.innerHeight-220},toggleAppMode);
 }
-/* Tahan tombol audio mengambang -> panel pilihan qori */
-function closeQoriPicker(){const p=document.getElementById('qoriPop');if(p)p.remove();}
-function positionQoriPicker(fab){ // panel selalu menempel pada tombol, termasuk saat tombol digeser
-  const pop=document.getElementById('qoriPop');if(!pop)return;
-  const r=fab.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
-  let left=(r.left+r.width/2)<window.innerWidth/2?r.left:r.right-w;
-  left=Math.min(Math.max(left,12),window.innerWidth-w-12);
-  let top=r.top-h-10;if(top<12)top=r.bottom+10;
-  pop.style.left=left+'px';pop.style.top=top+'px';
-}
-function openQoriPicker(fab){
-  closeQoriPicker();
-  const pop=document.createElement('div');pop.id='qoriPop';pop.className='qori-pop';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','Pilih qori');
-  const active=getActiveQoriId();
-  pop.innerHTML='<div class="qori-pop-t">Pilih qori</div><div class="qori-pop-list"></div>';
-  const list=pop.querySelector('.qori-pop-list');
-  Object.values(QORI_LIST).forEach(cfg=>{
-    const b=document.createElement('button');b.type='button';
-    const on=cfg.id===active;
-    b.className='qori-pop-item'+(on?' on':'');
-    b.textContent=cfg.name+(on?'  ✓':'');
-    b.onclick=()=>{stopAyahAudio();activateQori(cfg.id);closeQoriPicker();};
-    list.appendChild(b);
-  });
-  document.body.appendChild(pop);
-  positionQoriPicker(fab);
-  setTimeout(()=>{
-    const off=e=>{if(pop.contains(e.target)||fab.contains(e.target))return;closeQoriPicker();document.removeEventListener('pointerdown',off,true);document.removeEventListener('keydown',esc,true);};
-    const esc=e=>{if(e.key==='Escape'){closeQoriPicker();document.removeEventListener('pointerdown',off,true);document.removeEventListener('keydown',esc,true);}};
-    document.addEventListener('pointerdown',off,true);document.addEventListener('keydown',esc,true);
-  },0);
-}
 function initAudioFab(){
-  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible,openQoriPicker);
+  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible);
 }
 
-/* ================= Ujian lisan (soal sama, dijawab dengan rekaman) ================= */
-const LS={stream:null,rec:null,chunks:[],t0:0,timer:null,lock:null,active:false,busy:false,advancing:false,answers:[],marks:[]};
+/* ================= Ujian lisan (bagian dari mode ujian) =================
+   Satu soal = satu ayat pertanyaan + beberapa ayat jawaban berurutan.
+   Tiap ayat: dengar -> rekam (tanpa batas durasi) -> dengarkan bacaan sendiri -> koreksi Salah/Benar.
+   Jumlah ayat jawaban per soal ditentukan otomatis dari panjang ayat (ubah dua konstanta ini bila perlu). */
+const LS_BUDGET=22;  // batas jumlah kata ayat jawaban per soal (ayat pertama selalu masuk)
+const LS_MAX=5;      // maksimal ayat jawaban per soal
+const LS={stream:null,rec:null,chunks:[],t0:0,timer:null,lock:null,active:false,busy:false,locked:false,discard:false,
+  state:'',soal:[],si:0,ai:0,url:null,player:null,okSoal:0,msg:''};
+const LS_I={
+  head:'<svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15h3v5H5a1 1 0 0 1-1-1zM20 15h-3v5h2a1 1 0 0 0 1-1z"/></svg>',
+  play:'<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  mic:'<svg viewBox="0 0 24 24"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 0 0-7 0v6A3.5 3.5 0 0 0 12 15z"/><path d="M6 11.5a6 6 0 0 0 12 0h-1.8a4.2 4.2 0 0 1-8.4 0z"/><path d="M11 18h2v3h-2z"/></svg>',
+  spk:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16.2 8.8a5 5 0 0 1 0 6.4"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>'
+};
 function lsMime(){
   const c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
   for(const m of c){try{if(window.MediaRecorder&&MediaRecorder.isTypeSupported(m))return m;}catch(e){}}
   return '';
 }
 function lsEsc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function lsWords(g){return (QTEXT[g-1]||'').split(/\s+/).filter(Boolean).length;}
+function lsBuildSoal(){
+  const pool=buildPool();
+  const runs=[];let run=[];
+  pool.forEach(g=>{
+    if(run.length){
+      const prev=run[run.length-1];
+      if(g===prev+1&&ayahFromG(prev).s===ayahFromG(g).s){run.push(g);return;}
+      runs.push(run);run=[];
+    }
+    run.push(g);
+  });
+  if(run.length)runs.push(run);
+  const soal=[];
+  runs.forEach(r=>{
+    if(r.length===1){ // ayat tunggal: tanyakan ayat sesudahnya bila masih di surat yang sama
+      const {s,a}=ayahFromG(r[0]);
+      if(a<AY[s-1])soal.push({q:r[0],ans:[r[0]+1]});
+      return;
+    }
+    let i=0;
+    while(i<r.length-1){
+      const ans=[];let words=0,j=i+1;
+      while(j<r.length&&ans.length<LS_MAX){
+        const w=lsWords(r[j]);
+        if(ans.length&&words+w>LS_BUDGET)break;
+        ans.push(r[j]);words+=w;j++;
+      }
+      soal.push({q:r[i],ans});
+      i=j-1; // ayat terakhir yang dijawab menjadi ayat pertanyaan soal berikutnya
+    }
+  });
+  return soal;
+}
+function lsStopPlayer(){
+  if(LS.player){try{LS.player.pause();}catch(e){}LS.player=null;}
+  document.querySelectorAll('#lsCard .playing').forEach(el=>el.classList.remove('playing'));
+}
+function lsFreeUrl(){
+  lsStopPlayer();
+  if(LS.url){try{URL.revokeObjectURL(LS.url);}catch(e){}LS.url=null;}
+}
 function lsReleaseMic(){
   if(LS.stream){LS.stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}});LS.stream=null;}
   if(LS.lock){try{LS.lock.release();}catch(e){}LS.lock=null;}
   if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
 }
-function lsRevoke(){
-  LS.answers.forEach(a=>{if(a&&a.url){try{URL.revokeObjectURL(a.url);}catch(e){}}});
-  LS.answers=[];LS.marks=[];
-}
 function lsLeave(){
-  if(!LS.active)return;
-  LS.active=false;LS.advancing=false;
-  if(LS.rec){LS.rec.onstop=null;LS.rec.ondataavailable=null;try{if(LS.rec.state!=='inactive')LS.rec.stop();}catch(e){}}
-  lsReleaseMic();
+  if(!LS.active&&!LS.rec&&!LS.stream)return;
+  LS.active=false;LS.discard=true;LS.locked=false;
+  if(LS.rec){LS.rec.onstop=null;LS.rec.ondataavailable=null;try{if(LS.rec.state!=='inactive')LS.rec.stop();}catch(e){}LS.rec=null;}
+  LS.chunks=[];
+  lsFreeUrl();lsReleaseMic();stopAyahAudio();
 }
-function lsAbort(msg){
-  lsLeave();
-  $('ujianMsg').textContent=msg;
-  view('home');
+function lsCue(){return LS.ai===0?LS.soal[LS.si].q:LS.soal[LS.si].ans[LS.ai-1];}
+function lsAns(){return LS.soal[LS.si].ans[LS.ai];}
+function lsHead(){
+  return '<div class="ls-title">'+LS_I.head+'Bacakan Ayat Sesudah</div><p class="ls-sub">Rekam bacaan Anda tanpa melihat Quran.</p>';
+}
+function lsProgress(){
+  const n=LS.soal.length;
+  $('lsProgress').textContent='Soal '+(LS.si+1)+' / '+n;
+  const done=LS.si+(LS.state==='soalDone'?1:LS.ai/LS.soal[LS.si].ans.length);
+  $('lsBar').style.width=Math.round(done/n*100)+'%';
+}
+function lsPlayCue(btn){
+  if(!getAudioIconsVisible()){const m=$('lsNote');if(m)m.textContent='Ikon audio sedang dinonaktifkan. Aktifkan lagi lewat tombol audio.';return;}
+  playAyahAudio(lsCue(),btn);
+}
+function lsRender(){
+  const card=$('lsCard');
+  lsProgress();
+  const sj=LS.soal[LS.si];
+  const note=LS.msg?'<p class="ls-note" id="lsNote">'+lsEsc(LS.msg)+'</p>':'<p class="ls-note" id="lsNote"></p>';
+  const pos='<p class="status" style="margin:0 0 10px">Ayat '+(LS.ai+1)+' dari '+sj.ans.length+' pada soal ini</p>';
+  if(LS.state==='ready'){
+    card.innerHTML=lsHead()+pos+note
+      +'<button type="button" class="ls-round" id="lsPlay" aria-label="Putar ayat pertanyaan">'+LS_I.play+'</button>'
+      +'<div class="ls-lbl">'+(LS.ai===0?'Dengarkan ayat pertanyaan':'Lanjutkan ke ayat berikutnya')+'</div>'
+      +'<button type="button" class="ls-mic" id="lsMic" aria-label="Mulai merekam">'+LS_I.mic+'</button>'
+      +'<p class="ls-hint">Ketuk mikrofon untuk menghentikan audio dan mulai membaca.</p>';
+    $('lsPlay').onclick=()=>lsPlayCue($('lsPlay'));
+    $('lsMic').onclick=lsStartRec;
+    LS.msg='';
+    if(getAudioPlayMode()==='auto')lsPlayCue($('lsPlay'));
+  }else if(LS.state==='rec'){
+    card.innerHTML=lsHead()+pos
+      +'<div style="display:inline-flex;align-items:center;gap:8px;font:700 16px var(--sans);margin:4px 0 16px"><span class="rec-dot"></span>Merekam <span id="lisanTimer">00:00</span></div><br>'
+      +'<button type="button" class="ls-mic rec" id="lsStop" aria-label="Berhenti merekam">'+LS_I.stop+'</button>'
+      +'<div class="ls-lbl">Ketuk untuk berhenti</div>'
+      +'<p class="ls-hint">Baca ayat berikutnya sampai selesai. Tidak ada batas waktu.</p>';
+    $('lsStop').onclick=lsStopRec;
+  }else if(LS.state==='review'){
+    const cue=lsCue(),ans=lsAns();
+    card.innerHTML=lsHead()
+      +'<div class="ls-qbox"><div class="arab">'+lsEsc(QTEXT[cue-1]||'')+'</div></div>'
+      +'<div class="ls-abox"><div class="arab">'+lsEsc(QTEXT[ans-1]||'')+'</div></div>'
+      +(LS.url?'<button type="button" class="ls-pill" id="lsMine">▶ Putar bacaan Anda</button>':'<p class="status">(tidak ada rekaman)</p>')
+      +'<div class="ls-lbl" style="margin:4px 0 0;color:var(--ink);font-size:16px">Apakah bacaan Anda benar?</div>'
+      +'<div class="ls-judge"><button type="button" class="ls-no" id="lsNo">✕ Salah</button><button type="button" class="ls-yes" id="lsYes">✓ Benar</button></div>';
+    const ab=document.createElement('button');ab.type='button';ab.className='audio-btn';ab.setAttribute('aria-label','Putar ayat dengan qori');ab.innerHTML=LS_I.spk;
+    ab.onclick=()=>{lsStopPlayer();playAyahAudio(ans,ab);};
+    if(getAudioIconsVisible())card.querySelector('.ls-abox').appendChild(ab);
+    const mine=$('lsMine');
+    if(mine)mine.onclick=()=>{
+      if(LS.player){lsStopPlayer();mine.textContent='▶ Putar bacaan Anda';return;}
+      stopAyahAudio();
+      const au=new Audio(LS.url);LS.player=au;mine.classList.add('playing');mine.textContent='■ Hentikan';
+      au.onended=()=>{LS.player=null;mine.classList.remove('playing');mine.textContent='▶ Putar bacaan Anda';};
+      au.play().catch(()=>{LS.player=null;mine.classList.remove('playing');mine.textContent='▶ Putar bacaan Anda';});
+    };
+    $('lsNo').onclick=()=>lsJudge(false);
+    $('lsYes').onclick=()=>lsJudge(true);
+  }else if(LS.state==='soalDone'){
+    const n=sj.ans.length,bad=n-LS.okSoal;
+    const last=LS.si>=LS.soal.length-1;
+    let nextInfo='';
+    if(!last){
+      const a=ayahFromG(sj.ans[n-1]).s,b=ayahFromG(LS.soal[LS.si+1].q).s;
+      if(a!==b)nextInfo='<p class="status" style="margin:10px 0 0">Berikutnya: surat '+lsEsc(SN[b-1])+'</p>';
+    }
+    card.innerHTML='<div class="ls-title">Soal '+(LS.si+1)+' selesai</div>'
+      +'<div class="ls-big">'+LS.okSoal+' / '+n+'</div><p class="ls-sub" style="margin-bottom:6px">ayat benar'+(bad?' · '+bad+' perlu diulang':'')+'</p>'+nextInfo
+      +'<div class="btn-row"><button class="btn" id="lsNextSoal" style="width:100%">'+(last?'Lihat hasil':'Soal berikutnya')+'</button></div>';
+    $('lsNextSoal').onclick=lsNextSoal;
+  }
+  window.scrollTo(0,0);
 }
 async function startLisan(){
   if(LS.busy||LS.active)return;
   $('ujianMsg').textContent='';
+  const soal=lsBuildSoal();
+  if(!soal.length){$('ujianMsg').textContent='Tidak ada ayat yang bisa dijadikan soal lisan pada cakupan ini. Pilih cakupan lain.';return;}
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){
     $('ujianMsg').textContent='Browser ini belum mendukung perekaman suara.';return;
   }
   LS.busy=true;
   let stream;
   try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
-  catch(e){LS.busy=false;$('ujianMsg').textContent='Izin mikrofon ditolak atau mikrofon tidak tersedia. Izinkan mikrofon untuk halaman ini lalu coba lagi.';return;}
+  catch(e){
+    LS.busy=false;
+    const nf=e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError');
+    $('ujianMsg').textContent=nf?'Mikrofon tidak ditemukan di perangkat ini.':'Izin mikrofon ditolak. Izinkan mikrofon untuk halaman ini di pengaturan browser, lalu coba lagi.';
+    return;
+  }
   LS.busy=false;
-  lsRevoke();
-  buildQuiz();
-  QUIZ.ujian='lisan';
-  LS.stream=stream;LS.active=true;LS.advancing=false;
+  lsFreeUrl();
+  const flat=[];soal.forEach(x=>x.ans.forEach(g=>flat.push(g)));
+  QUIZ={mode:'sambung',items:flat,idx:0,correct:0,detail:[],ujian:'lisan',
+    src:document.querySelector('input[name=src]:checked').value,owner:historyOwner()};
+  LS.soal=soal;LS.si=0;LS.ai=0;LS.okSoal=0;LS.msg='';LS.discard=false;LS.locked=false;
+  LS.stream=stream;LS.active=true;LS.state='ready';
   try{if(navigator.wakeLock)LS.lock=await navigator.wakeLock.request('screen');}catch(e){}
   stopAyahAudio();
+  view('lisan');
+  lsRender();
+}
+function lsStartRec(){
+  if(!LS.active||LS.state!=='ready'||LS.locked)return;
+  stopAyahAudio();
+  LS.chunks=[];LS.discard=false;
+  const mime=lsMime();
+  try{LS.rec=mime?new MediaRecorder(LS.stream,{mimeType:mime}):new MediaRecorder(LS.stream);}
+  catch(e){LS.msg='Perekaman tidak bisa dimulai di perangkat ini.';lsRender();return;}
+  LS.rec.ondataavailable=ev=>{if(ev.data&&ev.data.size)LS.chunks.push(ev.data);};
+  LS.rec.start(1000); // tanpa batas durasi; data disimpan berkala
+  LS.t0=Date.now();
+  LS.state='rec';
+  lsRender();
+  if(LS.timer)clearInterval(LS.timer);
   LS.timer=setInterval(()=>{
     const sec=Math.floor((Date.now()-LS.t0)/1000);
     const el=$('lisanTimer');if(el)el.textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
   },500);
-  view('quiz');
-  renderQuestion();
 }
-function lsStartClip(){
-  LS.chunks=[];
-  const mime=lsMime();
-  try{LS.rec=mime?new MediaRecorder(LS.stream,{mimeType:mime}):new MediaRecorder(LS.stream);}
-  catch(e){lsAbort('Perekaman tidak bisa dimulai di perangkat ini.');return;}
-  LS.rec.ondataavailable=ev=>{if(ev.data&&ev.data.size)LS.chunks.push(ev.data);};
-  LS.rec.start(1000);
-  LS.t0=Date.now();
-  const el=$('lisanTimer');if(el)el.textContent='00:00';
-}
-function lsAfterRender(){
-  $('quizOptions').innerHTML='';
-  $('btnMushaf').style.display='none';
-  QUIZ.cur={label:$('quizQLabel').textContent,arab:$('quizArab').innerHTML};
-  const last=QUIZ.idx>=QUIZ.items.length-1;
-  $('btnLisanNext').textContent=last?'Selesai merekam':'Soal berikutnya';
-  $('btnLisanNext').disabled=false;
-  lsStartClip();
-}
-function lsNext(){
-  if(!LS.active||!LS.rec||LS.advancing)return;
-  LS.advancing=true;
-  $('btnLisanNext').disabled=true;
-  stopAyahAudio();
-  const rec=LS.rec,idx=QUIZ.idx;
+function lsStopRec(){
+  if(!LS.active||LS.state!=='rec'||LS.locked||!LS.rec)return;
+  LS.locked=true;
+  const rec=LS.rec;
+  if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
   rec.onstop=()=>{
+    LS.locked=false;
+    if(!LS.active||LS.discard)return;
     const blob=new Blob(LS.chunks,{type:rec.mimeType||'audio/webm'});
-    LS.answers[idx]={cur:QUIZ.cur,ans:QUIZ.curAns||{title:'',text:'',g:null},blob,url:blob.size?URL.createObjectURL(blob):null};
-    LS.advancing=false;
-    QUIZ.idx++;
-    if(QUIZ.idx>=QUIZ.items.length)lsFinishRecording();else renderQuestion();
+    LS.chunks=[];LS.rec=null;
+    if(!blob.size){LS.msg='Rekaman kosong. Coba rekam lagi.';LS.state='ready';lsRender();return;}
+    lsFreeUrl();
+    LS.url=URL.createObjectURL(blob);
+    LS.state='review';
+    lsRender();
   };
   try{if(rec.state!=='inactive')rec.stop();else rec.onstop();}catch(e){rec.onstop();}
 }
-function lsFinishRecording(){
-  LS.active=false;
-  lsReleaseMic();
-  $('quizBar').style.width='100%';
-  LS.marks=LS.answers.map(()=>true);
-  lsRenderReview();
-  view('tasmi');
-  window.scrollTo(0,0);
+function lsJudge(ok){
+  if(!LS.active||LS.state!=='review')return;
+  const g=lsAns();
+  lsFreeUrl();stopAyahAudio();
+  QUIZ.detail.push({q:g,ok});
+  if(ok){QUIZ.correct++;LS.okSoal++;}
+  LS.ai++;
+  if(LS.ai>=LS.soal[LS.si].ans.length)LS.state='soalDone';
+  else LS.state='ready';
+  lsRender();
 }
-function lsRenderReview(){
-  const box=$('lsList');box.innerHTML='';
-  const canAudio=typeof getAudioIconsVisible==='function'?getAudioIconsVisible():true;
-  LS.answers.forEach((a,i)=>{
-    const card=document.createElement('div');card.className='card';
-    card.innerHTML=`<div class="quiz-q-head"><b>Soal ${i+1}</b><button type="button" class="btn secondary ls-mark"></button></div>`
-      +`<p class="muted" style="margin:0 0 4px;font-size:13px">${lsEsc(a.cur.label)}</p>`
-      +`<div class="arab" style="font-size:22px">${a.cur.arab}</div>`
-      +`<div class="status" style="margin:12px 0 4px">Jawaban saya</div>`
-      +(a.url?'<audio controls style="width:100%"></audio>':'<p class="muted" style="margin:0;font-size:13px">(tidak ada rekaman)</p>')
-      +`<div class="quiz-q-head" style="margin:12px 0 4px"><span class="status" style="margin:0">Jawaban benar</span></div>`
-      +`<div><b>${lsEsc(a.ans.title)}</b></div>`
-      +(a.ans.text?`<div class="arab" style="font-size:22px">${lsEsc(a.ans.text)}</div>`:'');
-    const au=card.querySelector('audio');if(au)au.src=a.url;
-    if(canAudio&&a.ans.g){
-      const btn=document.createElement('button');btn.type='button';btn.className='audio-btn';btn.setAttribute('aria-label','Putar ayat dengan qori');
-      btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16.2 8.8a5 5 0 0 1 0 6.4"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
-      btn.onclick=()=>{box.querySelectorAll('audio').forEach(x=>{try{x.pause();}catch(e){}});playAyahAudio(a.ans.g,btn);};
-      card.querySelectorAll('.quiz-q-head')[1].appendChild(btn);
-    }
-    const mk=card.querySelector('.ls-mark');
-    const paint=()=>{const ok=LS.marks[i];mk.textContent=ok?'Benar ✓':'Salah ✗';mk.classList.toggle('ok',ok);mk.classList.toggle('bad',!ok);};
-    mk.onclick=()=>{LS.marks[i]=!LS.marks[i];paint();lsSummary();};
-    paint();
-    box.appendChild(card);
-  });
-  lsSummary();
+function lsNextSoal(){
+  LS.si++;
+  if(LS.si>=LS.soal.length){
+    LS.active=false;
+    lsReleaseMic();
+    finishQuiz();
+    return;
+  }
+  LS.ai=0;LS.okSoal=0;LS.state='ready';
+  lsRender();
 }
-function lsSummary(){
-  const n=LS.marks.length,ok=LS.marks.filter(Boolean).length;
-  $('lsSummary').innerHTML=`<b>${ok} / ${n}</b> benar<p class="status" style="margin:6px 0 0">Ketuk tanda Benar/Salah di tiap soal untuk mengubah penilaian.</p>`;
-}
-function lsSave(){
-  if(!LS.answers.length)return;
-  stopAyahAudio();
-  QUIZ.correct=LS.marks.filter(Boolean).length;
-  QUIZ.detail=LS.answers.map((a,i)=>({q:QUIZ.items[i],ok:LS.marks[i]}));
-  finishQuiz();
-}
+// Aplikasi disembunyikan saat merekam: hentikan dengan aman, buang rekaman, minta rekam ulang.
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden||!LS.active||LS.state!=='rec')return;
+  LS.discard=true;
+  if(LS.rec){LS.rec.onstop=null;LS.rec.ondataavailable=null;try{if(LS.rec.state!=='inactive')LS.rec.stop();}catch(e){}LS.rec=null;}
+  LS.chunks=[];LS.locked=false;
+  if(LS.timer){clearInterval(LS.timer);LS.timer=null;}
+  LS.state='ready';LS.msg='Rekaman dihentikan karena aplikasi ditutup sementara. Silakan rekam ulang.';
+  lsRender();
+});
 function initLisan(){
-  $('btnLisanNext').onclick=lsNext;
-  $('btnTsBack').onclick=()=>view('home');
-  $('btnTsSave').onclick=lsSave;
+  $('btnLsQuit').onclick=()=>view('home');
 }
 
 /* ================= Panel "Ayat Serupa" (814 frasa + daftar per surat) ================= */
