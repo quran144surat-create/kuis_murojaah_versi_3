@@ -1733,22 +1733,24 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLong){
     if(!dragging)return;
     const dx=e.clientX-startX, dy=e.clientY-startY;
     if(Math.abs(dx)>8||Math.abs(dy)>8){moved=true;clearLP();}
-    if(longDone)return;
     let newLeft=Math.min(Math.max(startLeft+dx,MARGIN),window.innerWidth-btn.offsetWidth-MARGIN);
     const b=bounds();
     let newTop=Math.min(Math.max(startTop+dy,b.min),b.max);
     btn.style.left=newLeft+'px';btn.style.top=newTop+'px';
+    if(typeof positionQoriMenu==='function')positionQoriMenu();
   });
   function endDrag(e){
     if(!dragging)return;
     clearLP();
     dragging=false;btn.classList.remove('dragging');
-    if(longDone){longDone=false;return;}
+    if(longDone&&!moved){longDone=false;return;}
+    longDone=false;
     if(moved){
       const r=btn.getBoundingClientRect();
       const side=(r.left+r.width/2)<window.innerWidth/2?'left':'right';
       const top=applyPos(side,r.top);
       savePos(side,top);
+      if(typeof positionQoriMenu==='function')positionQoriMenu();
     }else{
       onTap&&onTap();
     }
@@ -1761,6 +1763,14 @@ function makeDraggableFab(btn,storageKey,defaultPos,onTap,onLong){
 /* Tekan lama tombol audio mengambang -> pilih qori */
 function closeQoriMenu(){const m=document.getElementById('qoriMenu');if(m)m.remove();document.removeEventListener('pointerdown',qoriMenuOutside,true);}
 function qoriMenuOutside(e){const m=document.getElementById('qoriMenu');if(m&&!m.contains(e.target)&&e.target.id!=='audioFab')closeQoriMenu();}
+function positionQoriMenu(){
+  const m=document.getElementById('qoriMenu'),fab=$('audioFab');if(!m||!fab)return;
+  const r=fab.getBoundingClientRect(),w=m.offsetWidth,h=m.offsetHeight;
+  let left=r.left+r.width/2<window.innerWidth/2?r.left:r.right-w;
+  left=Math.max(8,Math.min(left,window.innerWidth-w-8));
+  let top=r.top-h-10;if(top<8)top=r.bottom+10;
+  m.style.left=left+'px';m.style.top=top+'px';
+}
 function openQoriMenu(){
   closeQoriMenu();
   const fab=$('audioFab');if(!fab)return;
@@ -1776,18 +1786,14 @@ function openQoriMenu(){
     m.appendChild(b);
   });
   document.body.appendChild(m);
-  const r=fab.getBoundingClientRect(),w=m.offsetWidth,h=m.offsetHeight;
-  let left=r.left+r.width/2<window.innerWidth/2?r.left:r.right-w;
-  left=Math.max(8,Math.min(left,window.innerWidth-w-8));
-  let top=r.top-h-10;if(top<8)top=r.bottom+10;
-  m.style.left=left+'px';m.style.top=top+'px';
+  positionQoriMenu();
   setTimeout(()=>document.addEventListener('pointerdown',qoriMenuOutside,true),0);
 }
 function initModeFab(){
   makeDraggableFab($('modeFab'),'hf-muraja-ah-fab-pos',{side:'right',top:window.innerHeight-220},toggleAppMode);
 }
 function initAudioFab(){
-  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},toggleAudioIconsVisible,openQoriMenu);
+  makeDraggableFab($('audioFab'),'hf-muraja-ah-audio-fab-pos',{side:'right',top:window.innerHeight-290},()=>{if(document.getElementById('qoriMenu')){closeQoriMenu();return;}toggleAudioIconsVisible();},openQoriMenu);
 }
 
 /* ================= Ujian lisan (bagian dari mode ujian) =================
