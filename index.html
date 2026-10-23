@@ -103,21 +103,16 @@ body.audio-icons-hidden .opt.has-audio{padding-left:16px}
 .juz-sum svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;transition:transform .2s}
 .juz-sum[aria-expanded=true] svg{transform:rotate(180deg)}
 .juz-panel{margin-top:10px}
-.juz-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.juz-chip{appearance:none;border:1px solid transparent;background:var(--surface2);color:var(--ink);border-radius:999px;padding:7px 0;font:500 13px var(--sans);cursor:pointer}
-.juz-chip.full{background:var(--ok-soft)}
-.juz-chip.part{border-color:var(--warn)}
-.juz-chip.sel{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
-.juz-chip{position:relative;overflow:hidden;transition:background .2s,border-color .2s,color .2s,transform .12s}
+.juz-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.juz-chip{appearance:none;position:relative;overflow:hidden;min-width:0;height:46px;padding:0;border:1px solid transparent;border-radius:12px;background-color:var(--surface2);background-image:linear-gradient(to top,color-mix(in srgb,var(--em) 26%,transparent) calc(var(--p,0)*100%),transparent 0);color:var(--ink);font:700 16px var(--sans);font-variant-numeric:tabular-nums;cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .12s}
 .juz-chip:active{transform:scale(.96)}
-.juz-chip::before{content:'';position:absolute;left:18%;right:18%;bottom:4px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--em) var(--p,0%),rgba(128,128,128,.22) var(--p,0%));opacity:0;transition:opacity .2s}
-.juz-chip.part::before{opacity:.9}
-.juz-chip.full{border-color:rgba(46,160,120,.35);border-color:color-mix(in srgb,var(--em) 38%,transparent)}
-.juz-chip.full::after{content:'\2713';position:absolute;top:3px;right:6px;width:14px;height:14px;border-radius:50%;background:var(--em);color:var(--on-primary);font:700 9px/14px var(--sans);text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
-.juz-chip.full.sel::after{background:var(--on-primary);color:var(--primary)}
+.juz-chip.full{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.juz-chip.full::after{content:'\2713';position:absolute;top:2px;right:6px;font-size:10px;line-height:1.2;opacity:.85;pointer-events:none}
+.juz-chip.sel{background:var(--gold-soft);color:var(--gold-ink);border-color:var(--gold-ink);box-shadow:inset 0 0 0 1px var(--gold-ink)}
 .juz-tools{display:flex;align-items:center;gap:2px;margin-top:8px;font-size:11px;color:var(--muted)}
 .juz-mini{appearance:none;border:none;background:none;color:var(--primary);font:600 12px var(--sans);padding:4px 6px 4px 0;margin-right:6px;cursor:pointer}
 .juz-legend{margin-left:auto}
+.juz-cnt{flex:none;background:var(--gold-soft);color:var(--gold-ink);border-radius:99px;padding:3px 10px;font:600 12px var(--sans)}
 .pill{display:inline-block;background:var(--gold-soft);color:var(--gold-ink);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
 .qori-active-pill{appearance:none;border:none;cursor:pointer;border-radius:99px;padding:4px 12px;font:600 12px var(--sans);flex:none}
 .qori-active-pill.active{background:var(--em);color:var(--on-primary);font-weight:800;cursor:default;box-shadow:0 0 0 3px color-mix(in srgb,var(--em) 25%,transparent),0 0 10px color-mix(in srgb,var(--em) 55%,transparent)}
@@ -1521,10 +1516,10 @@ function makeQoriManager(cfg){
   }
   const btnEl=$(cfg.btnId);
   const pick=document.createElement('div');pick.className='juz-pick';
-  pick.innerHTML='<button type="button" class="juz-sum" aria-expanded="false"><span class="juz-sum-l">Juz</span><span class="juz-sum-v">Semua 30 juz</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="juz-panel hidden"><div class="juz-grid"></div><div class="juz-tools"><button type="button" class="juz-mini" data-a="all">Pilih semua</button><button type="button" class="juz-mini" data-a="none">Kosongkan</button><span class="juz-legend">hijau lengkap · garis sebagian</span></div></div>';
+  pick.innerHTML='<button type="button" class="juz-sum" aria-expanded="false"><span class="juz-sum-l">Juz</span><span class="juz-sum-v">Semua 30 juz</span><span class="juz-cnt">0/30 juz</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="juz-panel hidden"><div class="juz-grid"></div><div class="juz-tools"><button type="button" class="juz-mini" data-a="all">Pilih semua</button><button type="button" class="juz-mini" data-a="none">Kosongkan</button><span class="juz-legend">✓ lengkap · terisi sebagian · kosong belum tersimpan</span></div></div>';
   btnEl.parentElement.parentElement.insertBefore(pick,btnEl.parentElement);
   const grid=pick.querySelector('.juz-grid');
-  const sumBtn=pick.querySelector('.juz-sum'), sumV=pick.querySelector('.juz-sum-v'), panel=pick.querySelector('.juz-panel');
+  const sumBtn=pick.querySelector('.juz-sum'), sumV=pick.querySelector('.juz-sum-v'), cntEl=pick.querySelector('.juz-cnt'), panel=pick.querySelector('.juz-panel');
   function setOpen(open){panel.classList.toggle('hidden',!open);sumBtn.setAttribute('aria-expanded',open?'true':'false');}
   (window.JUZ_CLOSERS=window.JUZ_CLOSERS||[]).push(()=>setOpen(false));
   sumBtn.onclick=()=>{const open=panel.classList.contains('hidden');(window.JUZ_CLOSERS||[]).forEach(f=>f());setOpen(open);};
@@ -1549,6 +1544,7 @@ function makeQoriManager(cfg){
   }
   function paint(){
     sumV.textContent=sumText();
+    let fullCount=0;
     chips.forEach((c,i)=>{
       const j=i+1,r=juzAyahRange(j);let n=0;
       for(let g=r[0];g<=r[1];g++)if(cached.has(g))n++;
@@ -1556,10 +1552,13 @@ function makeQoriManager(cfg){
       c.classList.toggle('sel',sel.has(j));
       c.classList.toggle('full',n===t);
       c.classList.toggle('part',n>0&&n<t);
-      c.style.setProperty('--p',(t?Math.round(n/t*100):0)+'%');
+      if(n===t)fullCount++;
+      c.style.setProperty('--p',t?(n/t).toFixed(3):'0');
       c.setAttribute('aria-pressed',sel.has(j)?'true':'false');
       c.title='Juz '+j+' · '+n+'/'+t+' ayat tersimpan';
+      c.setAttribute('aria-label',n===t?'Juz '+j+', sudah tersimpan':(n>0?'Juz '+j+', '+n+' dari '+t+' ayat tersimpan':'Juz '+j+', belum tersimpan'));
     });
+    cntEl.textContent=fullCount+'/30 juz';
     if(!running)updateBtnLabels();
   }
   async function getCached(){
@@ -2306,6 +2305,15 @@ $('btnBerandaStart').onclick=()=>view('home');
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible')setupSantri();
   });
+  // Segarkan status Qori saat kembali ke halaman ini (mis. setelah mengunduh di mushaf)
+  const refreshQoriIfOpen=()=>{
+    const v=$('view-pengaturan-audio-qori');
+    if(v&&!v.classList.contains('hidden'))refreshQoriStatus();
+  };
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')refreshQoriIfOpen();
+  });
+  window.addEventListener('pageshow',refreshQoriIfOpen);
   window.addEventListener('storage',e=>{
     if(e.key===LS_KEY||e.key===MULTI_SANTRI_KEY)setupSantri();
   });
